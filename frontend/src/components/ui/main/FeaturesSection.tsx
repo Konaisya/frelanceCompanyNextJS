@@ -9,7 +9,7 @@ const features = [
   {
     title: 'Гарантия безопасности',
     desc: 'Мы используем безопасные сделки и защищённые платежи, чтобы вы были уверены в результате.',
-    icon: '🛡️',
+    icon: '🛡',
   },
   {
     title: 'Умный поиск',
@@ -17,7 +17,7 @@ const features = [
     icon: '🤖',
   },
   {
-    title: 'Уверенное Сообщество профессионалов',
+    title: 'Сообщество профессионалов',
     desc: 'Будьте частью растущего сообщества талантливых фрилансеров и клиентов.',
     icon: '🌍',
   },
@@ -33,7 +33,7 @@ export default function FeaturesSection() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="text-3xl md:text-4xl font-bold text-center mb-16 relative z-10"
+        className="text-5xl md:text-6xl font-extrabold text-center mb-16 relative z-10"
       >
         Почему выбирают <span className="text-[var(--accent)]">FreelanceHub</span>
       </motion.h3>
@@ -52,7 +52,7 @@ export default function FeaturesSection() {
                        bg-[var(--card)]/50 backdrop-blur-xl shadow-xl cursor-pointer flex flex-col items-center justify-center"
           >
             <div className="text-6xl mb-5">{f.icon}</div>
-            <h4 className="text-xl font-semibold mb-2 text-center">{f.title}</h4>
+            <h4 className="text-xl font-semibold mb-2">{f.title}</h4>
             <p className="text-muted text-sm text-center">Нажмите, чтобы узнать больше</p>
           </motion.div>
         ))}
