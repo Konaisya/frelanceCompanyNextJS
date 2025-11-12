@@ -6,6 +6,13 @@ import Button from './Button'
 import ThemeToggle from '../ThemeToggle'
 import Link from 'next/link'
 
+const navLinks = [
+  { href: '/', label: 'Главная' },
+  { href: '/services', label: 'Проекты' },
+  { href: '#freelancers', label: 'Фрилансеры' },
+  { href: '#contacts', label: 'Контакты' },
+]
+
 export default function Navbar() {
   const { scrollY } = useScroll()
   const [scrolled, setScrolled] = useState(false)
@@ -28,21 +35,26 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <motion.div
-          whileHover={{ scale: 1.05 }}
+          whileHover={{ scale: 1.02 }}
           className="font-extrabold text-xl tracking-tight cursor-pointer select-none"
         >
           Freelance<span className="text-[var(--accent)]">Hub</span>
         </motion.div>
 
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-          <Link href="#how" className="hover:text-[var(--accent)] transition-colors">Как это работает</Link>
-          <Link href="#jobs" className="hover:text-[var(--accent)] transition-colors">Проекты</Link>
-          <Link href="#freelancers" className="hover:text-[var(--accent)] transition-colors">Фрилансеры</Link>
-          <Link href="#contacts" className="hover:text-[var(--accent)] transition-colors">Контакты</Link>
+        <div className="flex items-center gap-8 text-sm font-medium">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="hover:text-[var(--accent)] transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         <div className="flex items-center gap-3">
-          <Button className="hidden sm:block">Войти</Button>
+          <Link href="/login"><Button className="hidden sm:block">Войти</Button></Link>
           <ThemeToggle />
         </div>
       </div>
