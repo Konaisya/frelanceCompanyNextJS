@@ -10,8 +10,8 @@ class Order(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     id_user_customer: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    id_user_executor: Mapped[int] = mapped_column(ForeignKey('users.id'))
-    id_service: Mapped[int] = mapped_column(ForeignKey('services.id'))
+    id_user_executor: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=True)
+    id_service: Mapped[int] = mapped_column(ForeignKey('services.id'), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default=OrderStatus.PENDING.value)
     price: Mapped[float] = mapped_column(DECIMAL(10, 2))
     name: Mapped[str] = mapped_column(String(255))
