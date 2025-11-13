@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: ecc308d7ecf1
+Revision ID: 105e017225a9
 Revises: 
-Create Date: 2025-08-31 21:05:52.388260
+Create Date: 2025-11-13 15:41:05.303238
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'ecc308d7ecf1'
+revision: str = '105e017225a9'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,7 +27,7 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('specializations',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -58,12 +58,12 @@ def upgrade() -> None:
     sa.UniqueConstraint('email')
     )
     op.create_table('services',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
     sa.Column('id_specialization', sa.Integer(), nullable=False),
     sa.Column('id_user_executor', sa.Integer(), nullable=False),
-    sa.Column('price', sa.DECIMAL(precision=10, scale=2), nullable=False),
+    sa.Column('price', sa.Float(), nullable=False),
     sa.Column('delivery_time', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['id_specialization'], ['specializations.id'], ),
     sa.ForeignKeyConstraint(['id_user_executor'], ['users.id'], ),
@@ -72,8 +72,8 @@ def upgrade() -> None:
     op.create_table('orders',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('id_user_customer', sa.Integer(), nullable=False),
-    sa.Column('id_user_executor', sa.Integer(), nullable=False),
-    sa.Column('id_service', sa.Integer(), nullable=False),
+    sa.Column('id_user_executor', sa.Integer(), nullable=True),
+    sa.Column('id_service', sa.Integer(), nullable=True),
     sa.Column('status', sa.String(length=50), nullable=False),
     sa.Column('price', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
@@ -87,12 +87,12 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('messages',
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('id_user_sender', sa.Integer(), nullable=False),
     sa.Column('id_user_recipient', sa.Integer(), nullable=False),
     sa.Column('id_order', sa.Integer(), nullable=True),
     sa.Column('message', sa.Text(), nullable=False),
-    sa.Column('created_at', sa.DATETIME(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['id_order'], ['orders.id'], ),
     sa.ForeignKeyConstraint(['id_user_recipient'], ['users.id'], ),
     sa.ForeignKeyConstraint(['id_user_sender'], ['users.id'], ),
@@ -100,16 +100,16 @@ def upgrade() -> None:
     )
     op.create_table('reviews',
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('order_id', sa.Integer(), nullable=False),
+    sa.Column('id_order', sa.Integer(), nullable=False),
     sa.Column('id_user_author', sa.Integer(), nullable=False),
     sa.Column('id_user_target', sa.Integer(), nullable=False),
     sa.Column('rating', sa.Integer(), nullable=False),
     sa.Column('comment', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DATETIME(), nullable=False),
     sa.Column('updated_at', sa.DATETIME(), nullable=True),
+    sa.ForeignKeyConstraint(['id_order'], ['orders.id'], ),
     sa.ForeignKeyConstraint(['id_user_author'], ['users.id'], ),
     sa.ForeignKeyConstraint(['id_user_target'], ['users.id'], ),
-    sa.ForeignKeyConstraint(['order_id'], ['orders.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('transactions',
@@ -120,7 +120,6 @@ def upgrade() -> None:
     sa.Column('amount', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('commission', sa.DECIMAL(precision=10, scale=2), nullable=False),
     sa.Column('type', sa.String(length=50), nullable=False),
-    sa.Column('status', sa.String(length=20), nullable=False),
     sa.Column('created_at', sa.DATETIME(), nullable=False),
     sa.ForeignKeyConstraint(['id_order'], ['orders.id'], ),
     sa.ForeignKeyConstraint(['id_user_recipient'], ['users.id'], ),

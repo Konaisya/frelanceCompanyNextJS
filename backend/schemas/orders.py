@@ -14,25 +14,25 @@ class ShortOrderResponse(BaseModel):
     description: str
     price: float
     created_at: datetime
-    updated_at: Optional[datetime]
-    deadline: Optional[datetime]
+    updated_at: Optional[datetime] = None
+    deadline: Optional[datetime] = None
 
 class OrderResponse(BaseModel):
     id: int
     user_customer: CustomerResponse
-    user_executor: ExecutorResponse
-    service: ShortServiceResponse
+    user_executor: Optional[ExecutorResponse] = None
+    service: Optional[ShortServiceResponse] = None
     status: OrderStatus
     name: str
     description: str
     price: float
     created_at: datetime
-    updated_at: Optional[datetime]
-    deadline: Optional[datetime]
+    updated_at: Optional[datetime] = None
+    deadline: Optional[datetime] = None
 
 class CreateOrder(BaseModel):
-    id_user_executor: int
-    id_service: int
+    id_user_executor: Optional[int] = None
+    id_service: Optional[int] = None
     price: float
     name: str
     description: str
