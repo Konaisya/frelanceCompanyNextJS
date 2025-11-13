@@ -44,4 +44,6 @@ class UpdateOrder(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     deadline: Optional[datetime] = None
+    id_user_executor: Optional[int] = None
+    id_service: Optional[int] = None
 
