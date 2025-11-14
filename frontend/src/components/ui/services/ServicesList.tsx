@@ -1,39 +1,49 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Service } from '@/types/service'
 import { ServicesAPI } from '@/lib/api/services'
 import ServiceCard from './ServiceCard'
-import { Service } from '@/types/service'
-
+import ServiceCardSkeleton from './ServiceCardSkeleton'
 
 export default function ServicesList() {
   const [services, setServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    ServicesAPI.getAll()
-      .then((res) => setServices(res))
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false))
+    const fetchServices = async () => {
+      try {
+        const data = await ServicesAPI.getAll()
+        setServices(data)
+      } catch (error) {
+        console.error('Ошибка при загрузке услуг:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchServices()
   }, [])
 
   return (
-    <section className="py-24 px-6 max-w-7xl mx-auto">
-      <h2 className="text-5xl font-extrabold mb-16 text-center">
-        Услуги <span className="text-[var(--accent)]">фрилансеров</span>
-      </h2>
+    <>
+      <h1 className="text-3xl font-semibold mb-12 text-center">Услуги фрилансеров</h1>
 
-      {loading ? (
-        <div className="text-center text-lg opacity-70">Загрузка...</div>
-      ) : services.length === 0 ? (
-        <div className="text-center opacity-60">Пока нет доступных услуг</div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((service) => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="container mx-auto px-4 pb-32"
+      >
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => <ServiceCardSkeleton key={i} />)
+            : services.map(service => (
+                <ServiceCard key={service.id} service={service} />
+              ))}
         </div>
-      )}
-    </section>
+      </motion.section>
+    </>
   )
 }

@@ -15,8 +15,7 @@ export default function LoginPage() {
       const res = await authService.login(form)
       console.log('✅ Вход успешен:', res)
       alert('Вход выполнен!')
-    } catch (e: any) {
-      console.error('❌ Ошибка входа:', e.response?.data || e)
+    } catch (e: unknown) {
       setError('Неверный логин или пароль')
     } finally {
       setLoading(false)
