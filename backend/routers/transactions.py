@@ -13,10 +13,11 @@ router = APIRouter()
 async def create_transaction(new_trans: CreateTransaction,
                              transaction_service: TransactionService = Depends(get_transaction_service),
                              user_service: UserService = Depends(get_user_service),
-                             current_user: User = Depends(get_current_user),
+                             order_service: OrderService = Depends(get_order_service),
+                             #current_user: User = Depends(get_current_user),
                              ):
     new_trans_dict = new_trans.model_dump()
-    new_trans_dict['id_user_sender'] = current_user.id
+    new_trans_dict['id_user_sender'] = 3#current_user.id
 
     sender = user_service.get_user_filter_by(id=new_trans_dict['id_user_sender'])
     recipient = user_service.get_user_filter_by(id=new_trans_dict['id_user_recipient'])
@@ -31,13 +32,15 @@ async def create_transaction(new_trans: CreateTransaction,
     if sender.balance < total_debit:
         raise HTTPException(status_code=400, detail={'status': Status.FAILED.value, 'message': f'Недостаточно средств.'})
     
+    order = order_service.get_one_order_filter_by(id=new_trans_dict['id_order'])
+    if amount_transaction < order.price:
+        raise HTTPException(status_code=400, detail={'status': Status.FAILED.value, 'message': f'Сумма транзакции не может быть меньше стоимости заказа {order.price}.'})
+    
     sender_new_balance = sender.balance - total_debit
     user_service.update(user_id=sender.id, data=UserUpdate(balance=sender_new_balance))
 
     recipient_new_balance = recipient.balance + amount_transaction
     user_service.update(user_id=recipient.id, data=UserUpdate(balance=recipient_new_balance))
-
-    new_trans_dict['created_at'] = datetime.now().strftime('%Y-%m-%d')
 
     transaction = transaction_service.create_transaction(new_trans_dict)
     return Status.SUCCESS.value
