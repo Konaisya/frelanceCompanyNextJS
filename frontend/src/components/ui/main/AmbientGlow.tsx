@@ -14,7 +14,7 @@ export default function AmbientGlow() {
   const mouseY = useMotionValue(0)
 
   const translateX = useTransform(mouseX, [0, windowSize.width || 1], ['-2%', '2%'])
-  const translateY = useTransform(mouseY, [0, windowSize.height || 1], ['-2%', '2%'])
+  // const translateY = useTransform(mouseY, [0, windowSize.height || 1], ['-2%', '2%'])
 
   const { scrollYProgress } = useScroll()
   const scrollTranslateY = useTransform(scrollYProgress, [0, 1], [0, -50])
