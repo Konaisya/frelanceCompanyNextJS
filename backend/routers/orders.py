@@ -114,7 +114,7 @@ async def get_one_order(id: int,
 async def update_order(id: int,
                        upd_order: UpdateOrder,
                        order_service: OrderService = Depends(get_order_service),
-                       #current_user = Depends(get_current_user),
+                       current_user = Depends(get_current_user),
                        ):
     order = order_service.get_one_order_filter_by(id=id)
     if not order:
