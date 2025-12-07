@@ -59,6 +59,8 @@ async def get_all_users(name: str | None = Query(None),
                 continue
             executor_profile_dict = executor_profile.__dict__
 
+            del executor_profile_dict['id']
+
             exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile_dict['id_specialization']).__dict__
             executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec)
 
@@ -66,6 +68,8 @@ async def get_all_users(name: str | None = Query(None),
             response.append(ExecutorResponse(**response_data))
         elif user.role == Roles.CUSTOMER.value:
             customer_profile = user_service.get_customer_filter_by(id=user.id_customer_profile).__dict__
+
+            del customer_profile['id']
 
             response_data = {**user.__dict__, **customer_profile}
             response.append(CustomerResponse(**response_data))
