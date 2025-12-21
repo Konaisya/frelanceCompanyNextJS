@@ -1,54 +1,46 @@
 'use client'
 
 import { useState } from 'react'
-import { authService } from '@/lib/api/authService'
+import { AnimatePresence } from 'framer-motion'
+import ChooseBlock from '@/components/ui/login/ChooseBlock'
+import LoginBlock from '@/components/ui/login/LoginBlock'
+import SignupCustomer from '@/components/ui/login/SignupCustomer'
+import SignupExecutor from '@/components/ui/login/SignupExecutor'
+import { AuthStep } from '@/types/auth.types'
 
-export default function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleLogin = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const res = await authService.login(form)
-      console.log('✅ Вход успешен:', res)
-      alert('Вход выполнен!')
-    } catch (e: unknown) {
-      setError('Неверный логин или пароль')
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function AuthPage() {
+  const [step, setStep] = useState<AuthStep>('choose')
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm bg-[var(--glass)] backdrop-blur-xl p-6 rounded-2xl shadow-lg text-center">
-        <h1 className="text-2xl font-bold mb-6">Вход в систему</h1>
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div
+        className="
+          relative w-full max-w-md
+          bg-gradient-to-br from-[var(--glass)]/80 to-[var(--glass)]/40
+          backdrop-blur-2xl
+          border border-white/10
+          rounded-3xl p-8
+          shadow-[0_20px_60px_rgba(0,0,0,0.35)]
+          overflow-hidden
+        "
+      >
+        <AnimatePresence mode="wait">
+          {step === 'choose' && (
+            <ChooseBlock key="choose" onSelect={setStep} />
+          )}
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-3 p-2 rounded-lg bg-transparent border border-[var(--glass)]"
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-        />
-        <input
-          type="password"
-          placeholder="Пароль"
-          className="w-full mb-4 p-2 rounded-lg bg-transparent border border-[var(--glass)]"
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-        />
+          {step === 'login' && (
+            <LoginBlock key="login" onBack={() => setStep('choose')} />
+          )}
 
-        {error && <p className="text-red-500 mb-3 text-sm">{error}</p>}
+          {step === 'signup_customer' && (
+            <SignupCustomer key="customer" onBack={() => setStep('choose')} />
+          )}
 
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full py-2 bg-[var(--accent)] text-white rounded-xl hover:opacity-90 transition"
-        >
-          {loading ? 'Входим...' : 'Войти'}
-        </button>
+          {step === 'signup_executor' && (
+            <SignupExecutor key="executor" onBack={() => setStep('choose')} />
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 
 export default function Footer() {
   return (
@@ -22,8 +23,7 @@ export default function Footer() {
         <div>
           <h3 className="font-semibold mb-3">Навигация</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#features" className="hover:text-[var(--accent)]">О платформе</a></li>
-            <li><a href="#jobs" className="hover:text-[var(--accent)]">Проекты</a></li>
+            <li><Link href="services" className="hover:text-[var(--accent)]">Проекты</Link></li>
             <li><a href="#freelancers" className="hover:text-[var(--accent)]">Фрилансеры</a></li>
           </ul>
         </div>
