@@ -3,11 +3,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { authService } from '@/lib/api/authService'
-import { panelAnim } from './panelAnim'
 import { BackProps } from '@/types/auth.types'
 import { ArrowLeft, User, Mail, Lock, Building, Phone } from 'lucide-react'
+import { SignupProps } from '@/types/auth.types'
 
-export default function SignupCustomer({ onBack }: BackProps) {
+export default function SignupCustomer({ onBack, onSuccess }: SignupProps) {
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -18,26 +18,29 @@ export default function SignupCustomer({ onBack }: BackProps) {
 
   const [loading, setLoading] = useState(false)
 
-  const submit = async () => {
-    setLoading(true)
-    try {
-      await authService.signup({
-        user: {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: 'CUSTOMER',
-        },
-        customer_profile: {
-          company: form.company,
-          contacts: form.contacts,
-        },
-        executor_profile: null,
-      })
-    } finally {
-      setLoading(false)
-    }
+ const submit = async () => {
+  setLoading(true)
+  try {
+    await authService.signup({
+      user: {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: 'CUSTOMER',
+      },
+      customer_profile: {
+        company: form.company,
+        contacts: form.contacts,
+      },
+      executor_profile: null,
+    })
+
+    onSuccess(form.email)
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const handleChange = (field: keyof typeof form) => 
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,13 +92,18 @@ export default function SignupCustomer({ onBack }: BackProps) {
 
   return (
     <motion.div 
-      {...panelAnim} 
+      key="signup-customer-panel"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="w-full max-w-sm mx-auto p-4"
     >
       <div className="mb-6">
         <motion.button 
-          initial={{ opacity: 0, x: -10 }}
+          initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
           onClick={onBack} 
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 mb-4 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
         >
@@ -104,8 +112,9 @@ export default function SignupCustomer({ onBack }: BackProps) {
         </motion.button>
         
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
           className="mb-2"
         >
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -117,13 +126,18 @@ export default function SignupCustomer({ onBack }: BackProps) {
         </motion.div>
       </div>
 
-      <div className="space-y-3">
+      <motion.div 
+        className="space-y-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+      >
         {inputs.map(({ id, placeholder, icon: Icon, type, value, onChange }, index) => (
           <motion.div
             key={id}
-            initial={{ opacity: 0, x: -5 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + (index * 0.05), duration: 0.3 }}
             className="relative"
           >
             <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
@@ -141,12 +155,12 @@ export default function SignupCustomer({ onBack }: BackProps) {
             />
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <motion.button
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.6, duration: 0.3 }}
         onClick={submit}
         disabled={loading}
         className="w-full mt-6 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700

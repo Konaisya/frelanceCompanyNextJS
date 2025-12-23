@@ -7,12 +7,15 @@ import Button from '../Button'
 import ServiceDrawer from './ServiceDrawer'
 import { Service } from '@/types/service'
 
+import  { useToast } from "@/components/ui/ToastProvider";
+
 interface Props {
   service: Service
 }
 
 export default function ServiceCard({ service }: Props) {
   const [open, setOpen] = useState(false)
+  const { showToast } = useToast();
 
   return (
     <>
@@ -63,7 +66,13 @@ export default function ServiceCard({ service }: Props) {
 
           <Button
             className="mt-2 rounded-xl bg-[var(--accent)]/90 hover:bg-[var(--accent)] transition"
-            onClick={() => setOpen(true)}
+            onClick={() =>
+            showToast({
+              title: 'Регистрация прошла успешно!',
+              description: 'Теперь вы можете войти в систему используя email и пароль',
+              type: 'error',
+            })
+          }
           >
             Подробнее
           </Button>

@@ -1,5 +1,5 @@
 
-import { SignupData, LoginData } from '@/types/auth'
+import { SignupData } from '@/types/auth'
 import { setToken, removeToken } from '../utils/token'
 import api from './axios'
 

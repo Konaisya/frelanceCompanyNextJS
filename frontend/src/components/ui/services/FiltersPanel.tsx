@@ -35,18 +35,18 @@ export default function FiltersPanel({ onFilterChange }: Props) {
   const [selectedExecutor, setSelectedExecutor] = useState<number | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
-      const specsRes = await api.get<Specialization[]>('/specializations/')
-      setSpecializations(specsRes.data)
+      const fetchData = async () => {
+        const specsRes = await api.get<Specialization[]>('/specializations/')
+        const execRes = await api.get<Executor[]>('/users/', {
+          params: { role: 'EXECUTOR' },
+        })
 
-      const execRes = await api.get<Executor[]>('/users/', {
-        params: { role: 'EXECUTOR' },
-      })
-      setExecutors(execRes.data)
-    }
+        setSpecializations(specsRes.data)
+        setExecutors(execRes.data)
+      }
 
-    fetchData()
-  }, [])
+      fetchData()
+    }, [])
 
   useEffect(() => {
     onFilterChange({
@@ -57,7 +57,13 @@ export default function FiltersPanel({ onFilterChange }: Props) {
       id_specialization: selectedSpec,
       id_user_executor: selectedExecutor,
     })
-  }, [price, deliveryTime, selectedSpec, selectedExecutor])
+  }, [
+    price,
+    deliveryTime,
+    selectedSpec,
+    selectedExecutor,
+    onFilterChange,
+  ])
 
   return (
     <motion.aside
@@ -79,7 +85,6 @@ export default function FiltersPanel({ onFilterChange }: Props) {
       <h2 className="font-semibold text-lg">Фильтры</h2>
       <div className="h-px bg-white/10" />
 
-      {/* Цена */}
       <div className="flex flex-col gap-3">
         <span className="text-sm opacity-70">
           Цена: {price[0]} – {price[1]} ₽
@@ -102,7 +107,6 @@ export default function FiltersPanel({ onFilterChange }: Props) {
         />
       </div>
 
-      {/* Срок */}
       <div className="flex flex-col gap-3">
         <span className="text-sm opacity-70">
           Срок: {deliveryTime[0]} – {deliveryTime[1]} ч
@@ -155,7 +159,6 @@ export default function FiltersPanel({ onFilterChange }: Props) {
         </select>
       </div>
 
-      {/* Исполнитель */}
       <div className="flex flex-col gap-2">
         <span className="text-sm opacity-70">Исполнитель</span>
         <select

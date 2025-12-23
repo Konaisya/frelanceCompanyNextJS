@@ -4,7 +4,7 @@ import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/main/Footer";
-
+import ToastProvider from "@/components/ui/ToastProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,22 +23,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="ru" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          
-          <div className="min-h-screen bg-bg text-text transitin-colors duration-200">
-              <Navbar />
-              {/* <main className="container mx-auto px-4 py-8"> */}
-                {children}
-
-              {/* </main> */}
+          <div className="min-h-screen bg-bg text-text transition-colors duration-200">
+            <Navbar />
+            <ToastProvider>
+            {children}
+            </ToastProvider>
           </div>
         </ThemeProvider>
         <Footer />
