@@ -19,12 +19,12 @@ async def get_me(user_service: UserService = Depends(get_user_service),
 
         exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile['id_specialization']).__dict__
         executor_profile['specialization'] = SpecializationResponse(**exec_spec)
-
+        executor_profile.pop('id')
         response_data = {**user.__dict__, **executor_profile}
         return ExecutorResponse(**response_data)
     elif user.role == Roles.CUSTOMER.value:
         customer_profile = user_service.get_customer_filter_by(id=user.id_customer_profile).__dict__
-
+        customer_profile.pop('id')
         response_data = {**user.__dict__, **customer_profile}
         return CustomerResponse(**response_data)
     elif user.role == Roles.ADMIN.value:
@@ -90,12 +90,12 @@ async def get_one_user(id: int,
 
         exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile['id_specialization']).__dict__
         executor_profile['specialization'] = SpecializationResponse(**exec_spec)
-
+        executor_profile.pop('id')
         response_data = {**user.__dict__, **executor_profile}
         return ExecutorResponse(**response_data)
     elif user.role == Roles.CUSTOMER.value:
         customer_profile = user_service.get_customer_filter_by(id=user.id_customer_profile).__dict__
-
+        customer_profile.pop('id')
         response_data = {**user.__dict__, **customer_profile}
         return CustomerResponse(**response_data)
     elif user.role == Roles.ADMIN.value:
