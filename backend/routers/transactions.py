@@ -14,10 +14,10 @@ async def create_transaction(new_trans: CreateTransaction,
                              transaction_service: TransactionService = Depends(get_transaction_service),
                              user_service: UserService = Depends(get_user_service),
                              order_service: OrderService = Depends(get_order_service),
-                             #current_user: User = Depends(get_current_user),
+                             current_user: User = Depends(get_current_user),
                              ):
     new_trans_dict = new_trans.model_dump()
-    new_trans_dict['id_user_sender'] = 3#current_user.id
+    new_trans_dict['id_user_sender'] = current_user.id
 
     sender = user_service.get_user_filter_by(id=new_trans_dict['id_user_sender'])
     recipient = user_service.get_user_filter_by(id=new_trans_dict['id_user_recipient'])
