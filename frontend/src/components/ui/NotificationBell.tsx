@@ -1,4 +1,3 @@
-// components/ui/NotificationBell.tsx
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { Bell, MessageSquare, Check, X } from 'lucide-react'
@@ -6,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from './chat/ChatProvider'
 import Link from 'next/link'
 import { useAuth } from '@/components/ui/login/AuthProvider'
+import Image from 'next/image'
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
@@ -13,19 +13,24 @@ export default function NotificationBell() {
   const { unreadCount, chats, markAsRead } = useChat()
   const { isAuth } = useAuth()
 
-  // Только для авторизованных пользователей
-  if (!isAuth) return null
-
-  // Закрытие при клике вне элемента
   useEffect(() => {
+    if (!isAuth) return
+
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false)
       }
     }
+
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutside)
+  }, [isAuth])
+
+  if (!isAuth) return null
 
   const handleNotificationClick = (userId: number) => {
     markAsRead(userId)
@@ -85,10 +90,12 @@ export default function NotificationBell() {
                       <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center overflow-hidden">
                           {chat.userImage ? (
-                            <img 
+                            <Image
                               src={`http://127.0.0.1:8000/${chat.userImage}`}
                               alt={chat.userName}
-                              className="w-full h-full object-cover"
+                              width={40}
+                              height={40}
+                              className="object-cover"
                             />
                           ) : (
                             <div className="w-6 h-6 text-white font-semibold">

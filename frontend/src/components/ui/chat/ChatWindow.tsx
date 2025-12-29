@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Send, User, ChevronLeft, ChevronRight, MessageSquare, Maximize2, Minimize2 } from 'lucide-react'
 import { useChat } from './ChatProvider'
 import { useAuth } from '../login/AuthProvider'
+import Image from 'next/image'
 
 
 interface ChatWindowProps {
@@ -22,10 +23,8 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
     messages, 
     isConnected, 
     currentChatUserId,
-    activeChats,
     chats,
     toggleChat,
-    closeChat,
     closeAllChats,
     markAsRead
   } = useChat()
@@ -94,9 +93,11 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden bg-[var(--accent)]">
                 {currentChat.userImage ? (
-                  <img 
-                    src={`http://127.0.0.1:8000/${currentChat.userImage}`} 
+                  <Image
+                    src={`http://127.0.0.1:8000/${currentChat.userImage}`}
                     alt={currentChat.userName}
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -177,11 +178,14 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
                           <div className="relative">
                             <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center overflow-hidden">
                               {chat.userImage ? (
-                                <img 
-                                  src={`http://127.0.0.1:8000/${chat.userImage}`}
-                                  alt={chat.userName}
-                                  className="w-full h-full object-cover"
-                                />
+                                  <Image
+                                    src={`http://127.0.0.1:8000/${chat.userImage}`}
+                                    alt={chat.userName}
+                                    width={40}
+                                    height={40}
+                                    className="w-full h-full object-cover"
+                                  />
+
                               ) : (
                                 <div className="w-6 h-6 text-white font-semibold">
                                   {chat.userName.charAt(0)}
@@ -256,7 +260,6 @@ export default function ChatWindow({ onClose }: ChatWindowProps) {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Поле ввода */}
               <div className="p-4 border-t">
                 <div className="flex gap-2">
                   <textarea

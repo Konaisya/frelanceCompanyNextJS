@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import api from '@/lib/api/axios'
 
 interface User {
@@ -35,9 +35,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const isAuth = !!accessToken
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     if (!accessToken) return
-    
+
     try {
       const response = await api.get('/users/me', {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -47,7 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to fetch user:', error)
       logout()
     }
-  }
+  }, [accessToken])
+
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
@@ -62,7 +63,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (accessToken) {
       fetchUser()
     }
-  }, [accessToken])
+  }, [accessToken, fetchUser])
+
 
   const login = (token: string) => {
     localStorage.setItem('access_token', token)

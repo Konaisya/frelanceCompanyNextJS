@@ -1,9 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import SearchInput from './SearchInput'
 import FilterDropdown from './FilterDropdown'
-import PriceRangeFilter from './PriceRangeFilter'
 import SortingDropdown from './SortingDropdown'
 
 interface ExecutorsFiltersProps {
@@ -58,12 +56,6 @@ export default function ExecutorsFilters({ filters, onChange }: ExecutorsFilters
           onChange={(vals) => onChange({ ...filters, experience: vals })}
         />
 
-        {/* <PriceRangeFilter
-          min={1000}
-          max={100000}
-          value={filters.priceRange}
-          onChange={(range) => onChange({ ...filters, priceRange: range })}
-        /> */}
 
         <SortingDropdown
           value={filters.sortBy}

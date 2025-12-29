@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Sparkles, Calendar, Clock, DollarSign, User, Zap, CheckCircle, Send, Star } from 'lucide-react'
+import { X, Sparkles, Calendar, Clock, DollarSign, User, Zap, Send, Star } from 'lucide-react'
 import { useRef, useEffect, useState } from 'react'
 import { useToast } from '@/components/ui/ToastProvider'
 import axios from 'axios'
@@ -102,14 +102,14 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-  }
+  // const formatDate = (dateString: string) => {
+  //   const date = new Date(dateString)
+  //   return date.toLocaleDateString('ru-RU', {
+  //     day: 'numeric',
+  //     month: 'long',
+  //     year: 'numeric'
+  //   })
+  // }
 
   if (!service) return null
 
@@ -273,7 +273,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                 />
               </div>
 
-              {/* Content */}
               <div className="flex-1 overflow-y-auto">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -285,7 +284,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                   className="p-6 select-text"
                 >
                   <div className="space-y-6">
-                    {/* Service Stats */}
                     <div className="grid grid-cols-2 gap-4">
                       <motion.div 
                         className="p-4 rounded-xl bg-gradient-to-br from-[var(--bg)] to-[color-mix(in_srgb,var(--bg)_90%,var(--accent))] border border-[color-mix(in_srgb,var(--text)_10%,transparent)]"
@@ -324,7 +322,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                       </motion.div>
                     </div>
 
-                    {/* Description */}
                     <motion.div 
                       className="p-5 rounded-xl bg-gradient-to-br from-[var(--bg)]/50 to-transparent border border-[color-mix(in_srgb,var(--text)_10%,transparent)] backdrop-blur-sm"
                       initial={{ opacity: 0 }}
@@ -342,7 +339,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                       </p>
                     </motion.div>
 
-                    {/* Executor Info */}
                     {!isOwnService && (
                       <motion.div 
                         className="p-5 rounded-xl bg-gradient-to-br from-[var(--bg)]/50 to-transparent border border-[color-mix(in_srgb,var(--text)_10%,transparent)] backdrop-blur-sm"
@@ -383,7 +379,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                       </motion.div>
                     )}
 
-                    {/* Order Form */}
                     {!isOwnService && (
                       <motion.div 
                         className="p-5 rounded-xl bg-gradient-to-br from-[var(--bg)]/50 to-transparent border border-[color-mix(in_srgb,var(--text)_10%,transparent)] backdrop-blur-sm"
@@ -450,19 +445,11 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                                 </>
                               )}
                             </motion.button>
-
-                            <div className="mt-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                              <div className="flex items-center gap-2 text-sm text-green-500">
-                                <CheckCircle className="w-4 h-4" />
-                                <span>После оплаты исполнитель приступит к работе</span>
-                              </div>
-                            </div>
                           </div>
                         </div>
                       </motion.div>
                     )}
 
-                    {/* Own Service Info */}
                     {isOwnService && (
                       <motion.div 
                         className="p-5 rounded-xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-500/20 backdrop-blur-sm"
@@ -488,7 +475,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
                 </motion.div>
               </div>
 
-              {/* Footer */}
               <div className="relative px-6 py-4 border-t border-[color-mix(in_srgb,var(--text)_10%,transparent)]">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -515,7 +501,6 @@ export default function ServiceDrawer({ open, onClose, service, currentUserId }:
               </div>
             </div>
 
-            {/* Decorative elements */}
             <motion.div
               className="absolute top-20 right-10 w-2 h-2 bg-[var(--accent)] rounded-full"
               initial={{ scale: 0, opacity: 0 }}

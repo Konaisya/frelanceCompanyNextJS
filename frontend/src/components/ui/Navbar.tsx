@@ -6,7 +6,7 @@ import Button from './Button'
 import ThemeToggle from '../ThemeToggle'
 import Link from 'next/link'
 import Image from 'next/image'
-import { LogOut, User, Menu, X, MessageSquare, Bell } from 'lucide-react'
+import { LogOut, User, Menu, X, MessageSquare } from 'lucide-react'
 import { useAuth } from '@/components/ui/login/AuthProvider'
 import axios from 'axios'
 import ChatWindow from './chat/ChatWindow'
@@ -17,8 +17,7 @@ import { useChat } from './chat/useChat'
 const navLinks = [
   { href: '/', label: 'Главная' },
   { href: '/services', label: 'Проекты' },
-  { href: '/executors', label: 'Фрилансеры' },
-  { href: '#contacts', label: 'Контакты' },
+  { href: '/executors', label: 'Фрилансеры' }
 ]
 
 export default function Navbar() {
@@ -122,10 +121,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {/* Кнопка уведомлений */}
                 <NotificationBell />
-                
-                {/* Кнопка чата */}
                 <button
                   onClick={() => setShowChat(!showChat)}
                   className="relative p-2 rounded-lg hover:bg-[color-mix(in_srgb,var(--text)_10%,transparent)] transition-colors"

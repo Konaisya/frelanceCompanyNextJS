@@ -7,6 +7,7 @@ import { ArrowLeft, Mail, Lock } from 'lucide-react'
 import axios from 'axios'
 import { LoginProps } from '@/types/auth.types'
 import { useAuth } from '@/components/ui/login/AuthProvider'
+import { useRouter } from 'next/navigation'
 
 
 export default function LoginBlock({ onBack, defaultEmail }: LoginProps) {
@@ -17,6 +18,7 @@ export default function LoginBlock({ onBack, defaultEmail }: LoginProps) {
   const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+    const router = useRouter()
   
   useEffect(() => {
     if (defaultEmail) {
@@ -36,6 +38,7 @@ const submit = async () => {
       password: form.password,
     })
     await login(res.access_token)
+    router.push('/profile')
 
   } catch (e: unknown) {
     if (axios.isAxiosError(e)) {

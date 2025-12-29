@@ -68,7 +68,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const usersCache = useRef<Record<number, { name: string; image?: string }>>({})
 
-  const loadUser = async (userId: number) => {
+const loadUser = useCallback(
+  async (userId: number) => {
     if (usersCache.current[userId]) return usersCache.current[userId]
     if (!accessToken) return null
 
@@ -87,7 +88,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } catch {
       return null
     }
-  }
+  },
+  [accessToken]
+)
+
 
 
   const markAsRead = useCallback(
@@ -262,7 +266,7 @@ const sendMessage = useCallback(
     }
 
     return () => ws.close()
-  }, [user?.id, accessToken])
+  }, [user?.id, loadUser])
 
   const filteredMessages =
     currentChatUserId && user?.id

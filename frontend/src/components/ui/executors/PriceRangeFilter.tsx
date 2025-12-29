@@ -33,9 +33,6 @@ export default function PriceRangeFilter({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [localValue, onChange])
 
-  const handleSliderChange = (newValue: number[]) => {
-    setLocalValue([newValue[0], newValue[1]])
-  }
 
   const handleApply = () => {
     onChange(localValue)

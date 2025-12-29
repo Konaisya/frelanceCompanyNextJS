@@ -4,8 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Star, Briefcase, Sparkles, Phone } from 'lucide-react'
 import ServiceCard from '../services/ServiceCard'
 import { Service } from '@/types/service'
-import { useEffect, useRef } from 'react'
+import { useEffect} from 'react'
 import ChatButton from '@/components/ui/chat/ChatButton'
+import Image from 'next/image'
+
 
 interface Executor {
   id: number
@@ -23,7 +25,6 @@ interface ExecutorDrawerProps {
 }
 
 export default function ExecutorDrawer({ executor, services, isOpen, onClose }: ExecutorDrawerProps) {
-    const drawerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!isOpen) return
@@ -60,10 +61,11 @@ export default function ExecutorDrawer({ executor, services, isOpen, onClose }: 
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <div className="w-14 h-14 rounded-full overflow-hidden ring-3 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--card)]">
-                      <img
+                      <Image
                         src={`http://127.0.0.1:8000/${executor.image}`}
                         alt={executor.name}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-[var(--accent)] text-[var(--accent-text)] rounded-full p-1">
@@ -122,9 +124,6 @@ export default function ExecutorDrawer({ executor, services, isOpen, onClose }: 
                         executorName={executor.name}
                         executorImage={executor.image}
                       />
-                      <button className="px-4 py-3 border border-[color-mix(in_srgb,var(--text)_20%,transparent)] rounded-lg hover:bg-[color-mix(in_srgb,var(--text)_5%,transparent)] transition-colors">
-                        <Phone className="w-5 h-5" />
-                      </button>
                     </div>
                 </div>
               </div>

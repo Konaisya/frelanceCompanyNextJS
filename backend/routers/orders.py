@@ -55,6 +55,7 @@ async def get_all_orders(id_user_customer: int | None = Query(None),
         exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
         executor_profile_dict = executor_profile.__dict__
         executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
+        executor_profile_dict.pop('id')
         executor_response_dict = {**user_executor.__dict__, **executor_profile_dict}
         executor_response = ExecutorResponse(**executor_response_dict)
 
@@ -92,6 +93,7 @@ async def get_one_order(id: int,
     executor_profile = user_service.get_executor_filter_by(id=user_executor.id_executor_profile)
     exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
     executor_profile_dict = executor_profile.__dict__
+    executor_profile_dict.pop('id')
     executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
     executor_response_dict = {**user_executor.__dict__, **executor_profile_dict}
     executor_response = ExecutorResponse(**executor_response_dict)

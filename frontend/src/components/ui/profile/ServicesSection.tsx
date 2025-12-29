@@ -8,7 +8,7 @@ import EditServiceModal from './EditServiceModal'
 
 interface ServicesSectionProps {
   services: Service[]
-  loading?: boolean // принимает флаг загрузки сервисов
+  loading?: boolean 
   onCreate: () => void
   onUpdate: (id: number, data: Partial<Service>) => Promise<boolean>
   onDelete: (id: number) => Promise<boolean>

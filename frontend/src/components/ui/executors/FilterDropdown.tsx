@@ -54,9 +54,6 @@ export default function FilterDropdown({
     }
   }
 
-  const selectedLabels = selected
-    .map(value => options.find(opt => opt.value === value)?.label)
-    .filter(Boolean)
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>

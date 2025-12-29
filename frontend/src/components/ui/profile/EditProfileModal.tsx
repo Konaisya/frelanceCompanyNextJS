@@ -1,17 +1,18 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Save, Mail,  Phone, Briefcase, DollarSign, Award, Code, User as UserIcon  } from 'lucide-react'
+import { X, Save, Mail, Phone, Briefcase, DollarSign, Award, Code, User as UserIcon } from 'lucide-react'
 import { User, Specialization, UpdateUserRequest } from '@/types/profile'
 import { profileAPI } from '@/lib/api/axios'
 import { useToast } from '@/components/ui/ToastProvider'
+import { AxiosError } from 'axios'
 
 interface EditProfileModalProps {
   user: User
   isOpen: boolean
   onClose: () => void
-  onSave: (updatedUser: User) => void
+  onSave?: (updatedUser: User) => void
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -44,18 +45,12 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [specializationsLoading, setSpecializationsLoading] = useState(false)
   const { showToast } = useToast()
 
-  useEffect(() => {
-    if (isOpen && user.role === 'EXECUTOR') {
-      fetchSpecializations()
-    }
-  }, [isOpen, user.role])
-
-  const fetchSpecializations = async () => {
+  const fetchSpecializations = useCallback(async () => {
     try {
       setSpecializationsLoading(true)
       const response = await profileAPI.getSpecializations()
       setSpecializations(response.data)
-    } catch (error) {
+    } catch {
       showToast({
         title: 'Ошибка',
         description: 'Не удалось загрузить специализации',
@@ -64,6 +59,26 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     } finally {
       setSpecializationsLoading(false)
     }
+  }, [showToast])
+
+  useEffect(() => {
+    if (isOpen && user.role === 'EXECUTOR') {
+      fetchSpecializations()
+    }
+  }, [isOpen, user.role, fetchSpecializations])
+
+  const handleInputChange = (
+    field: keyof UpdateUserRequest['user'] | keyof NonNullable<UpdateUserRequest['executor_profile']> | keyof NonNullable<UpdateUserRequest['customer_profile']>,
+    value: string | number,
+    section: 'user' | 'executor_profile' | 'customer_profile' = 'user'
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,9 +87,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
     try {
       await profileAPI.updateUser(user.id, formData)
+      onSave?.({ ...user, ...formData.user })
       window.location.reload()
-
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>
       showToast({
         title: 'Ошибка',
         description: error.response?.data?.message || 'Не удалось обновить профиль',
@@ -85,18 +101,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
   }
 
-
-  const handleInputChange = (field: string, value: any, section: 'user' | 'executor_profile' | 'customer_profile' = 'user') => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
-    }))
-  }
-
   if (!isOpen) return null
+
 
   return (
     <AnimatePresence>
@@ -137,7 +143,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
-                {/* Основная информация */}
                 <div className="space-y-4">
                   <h4 className="font-semibold text-text flex items-center gap-2">
                     <UserIcon className="w-4 h-4" />
@@ -190,7 +195,6 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
                 {user.role === 'EXECUTOR' && (
                   <>
-                    {/* Информация для исполнителя */}
                     <div className="space-y-4 pt-4 border-t border-accent/10">
                       <h4 className="font-semibold text-text flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />

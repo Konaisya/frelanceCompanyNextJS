@@ -7,7 +7,7 @@ import ProfileHeader from './ProfileHeader'
 import ProfileStats from './ProfileStats'
 import ServicesSection from './ServicesSection'
 import ReviewsSection from './ReviewsSection'
-import OrdersSection from './OrdersSection' // Добавляем импорт
+import OrdersSection from './OrdersSection'
 import CreateServiceModal from './CreateServiceModal'
 import EditProfileModal from './EditProfileModal'
 import { Service, CreateServiceData } from '@/types/profile'
@@ -82,6 +82,8 @@ const ProfilePage: React.FC = () => {
     updateProfileData(updatedUser)
   }
 
+  const isExecutor = user.role === 'EXECUTOR'
+
   return (
     <>
       <motion.div
@@ -95,19 +97,21 @@ const ProfilePage: React.FC = () => {
             user={user} 
             onAvatarUpdate={updateAvatar}
             onEditClick={() => setIsEditProfileModalOpen(true)}
+            onBalanceUpdate={refreshData} 
           />
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
             <div className="lg:col-span-2 space-y-8">
-              <ProfileStats user={user} reviews={reviews} services={localServices} />
+              {isExecutor && (
+                <ProfileStats user={user} reviews={reviews} services={localServices} />
+              )}
               
-              {/* Секция заказов - для всех пользователей */}
               <OrdersSection 
                 userId={user.id} 
-                isExecutor={user.role === 'EXECUTOR'} 
+                isExecutor={isExecutor} 
               />
               
-              {user.role === 'EXECUTOR' && (
+              {isExecutor && (
                 <ServicesSection
                   services={localServices}
                   loading={servicesLoading}
@@ -119,12 +123,36 @@ const ProfilePage: React.FC = () => {
             </div>
             
             <div className="lg:col-span-1">
-              <ReviewsSection reviews={reviews} />
+              {isExecutor ? (
+                <ReviewsSection userId={user.id} />
+              ) : (
+                <div className="card p-6">
+                  <h3 className="text-xl font-bold text-text mb-4">Обо мне</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-text mb-2">Имя</h4>
+                      <p className="text-muted">{user.name}</p>
+                    </div>
+                    {user.description && (
+                      <div>
+                        <h4 className="font-medium text-text mb-2">Описание</h4>
+                        <p className="text-muted">{user.description}</p>
+                      </div>
+                    )}
+                    <div>
+                      <h4 className="font-medium text-text mb-2">Баланс</h4>
+                      <p className="text-2xl font-bold text-accent">
+                        {user.balance?.toLocaleString('ru-RU') || '0'} ₽
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {user.role === 'EXECUTOR' && (
+        {isExecutor && (
           <CreateServiceModal
             isOpen={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}

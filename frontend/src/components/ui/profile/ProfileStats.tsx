@@ -2,108 +2,117 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { User, Service, Review } from '@/types/profile'
-import { Star, Briefcase, Clock, Award } from 'lucide-react'
+import { DollarSign, Package, Star } from 'lucide-react'
+import { Review, Service } from '@/types/profile'
+
+interface User {
+  id: number
+  name: string
+  email: string
+  balance?: number
+  description?: string
+  role: string
+}
 
 interface ProfileStatsProps {
   user: User
-  reviews: Review[]
-  services: Service[]
+  reviews?: Review[]
+  services?: Service[]
 }
 
-const ProfileStats: React.FC<ProfileStatsProps> = ({ user, reviews, services }) => {
+const ProfileStats: React.FC<ProfileStatsProps> = ({ 
+  user, 
+  reviews = [], 
+  services = [] 
+}) => {
+  const isExecutor = user.role === 'EXECUTOR'
+
+  if (!isExecutor) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="card p-6"
+      >
+        <h3 className="text-xl font-bold text-text mb-6">Баланс</h3>
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-accent/10 rounded-lg">
+            <DollarSign className="w-6 h-6 text-accent" />
+          </div>
+          <div>
+            <p className="text-sm text-muted">Текущий баланс</p>
+            <p className="text-3xl font-bold text-text">
+              {user.balance?.toLocaleString('ru-RU') || '0'} ₽
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  const totalServices = services.length
+  const totalReviews = reviews.length
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1)
+    : '0.0'
+
   const stats = [
     {
-      icon: <Briefcase className="w-5 h-5" />,
-      label: 'Сервисы',
-      value: services.length,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-500/10',
+      icon: <Package className="w-5 h-5" />,
+      label: 'Услуги',
+      value: totalServices,
+      color: 'bg-blue-500/10 text-blue-600 border-blue-500/20'
     },
     {
       icon: <Star className="w-5 h-5" />,
       label: 'Отзывы',
-      value: reviews.length,
-      color: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/10',
+      value: totalReviews,
+      color: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
     },
     {
-      icon: <Award className="w-5 h-5" />,
+      icon: <Star className="w-5 h-5" />,
       label: 'Рейтинг',
-      value: reviews.length > 0 
-        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-        : '0.0',
-      color: 'text-purple-500',
-      bgColor: 'bg-purple-500/10',
+      value: averageRating,
+      color: 'bg-green-500/10 text-green-600 border-green-500/20'
     },
     {
-      icon: <Clock className="w-5 h-5" />,
-      label: 'Опыт',
-      value: user.experience ? `${user.experience} лет` : 'Нет опыта',
-      color: 'text-green-500',
-      bgColor: 'bg-green-500/10',
-    },
+      icon: <DollarSign className="w-5 h-5" />,
+      label: 'Баланс',
+      value: user.balance?.toLocaleString('ru-RU') || '0',
+      suffix: ' ₽',
+      color: 'bg-purple-500/10 text-purple-600 border-purple-500/20'
+    }
   ]
 
-  const skills = user.skills?.split(',').map(skill => skill.trim()) || []
-
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="card p-6"
+    >
+      <h3 className="text-xl font-bold text-text mb-6">Статистика</h3>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="card p-4"
+          <div
+            key={index}
+            className={`p-4 rounded-xl border ${stat.color} flex items-center gap-3`}
           >
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${stat.bgColor} ${stat.color}`}>
-                {stat.icon}
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-text">{stat.value}</p>
-                <p className="text-sm text-muted">{stat.label}</p>
-              </div>
+            <div className="p-2 bg-white/20 rounded-lg">
+              {stat.icon}
             </div>
-          </motion.div>
+            <div>
+              <p className="text-sm text-muted">{stat.label}</p>
+              <p className="text-xl font-bold text-text">
+                {stat.value}
+                {stat.suffix && <span className="text-sm ml-1">{stat.suffix}</span>}
+              </p>
+            </div>
+          </div>
         ))}
       </div>
-
-      {skills.length > 0 && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="card p-6"
-        >
-          <h3 className="text-lg font-semibold text-text mb-4">Навыки</h3>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-accent/10 text-accent rounded-full text-sm"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </motion.div>
-      )}
-
-      {user.contacts && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="card p-6"
-        >
-          <h3 className="text-lg font-semibold text-text mb-4">Контакты</h3>
-          <p className="text-text">{user.contacts}</p>
-        </motion.div>
-      )}
-    </div>
+    </motion.div>
   )
 }
 

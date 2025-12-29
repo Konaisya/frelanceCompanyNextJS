@@ -16,8 +16,7 @@ interface ChatButtonProps {
 export default function ChatButton({ 
   executorId, 
   executorName, 
-  executorImage,
-  orderId 
+  executorImage
 }: ChatButtonProps) {
   const { isAuth } = useAuth()
   const { openChat, currentChatUserId } = useChat()

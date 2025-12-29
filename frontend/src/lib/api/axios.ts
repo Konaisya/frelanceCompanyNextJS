@@ -48,19 +48,32 @@ export const profileAPI = {
     })
   },
 
-  // Сервисы
   getServices: (params?: any) => api.get('/services/', { params }),
   createService: (data: any) => api.post('/services/', data),
   updateService: (id: number, data: any) => api.put(`/services/${id}`, data),
   deleteService: (id: number) => api.delete(`/services/${id}`),
 
+  createTransaction: (data: {
+    id_order: number
+    id_user_recipient: number
+    amount: number
+    type: 'DEPOSIT' | 'WITHDRAWAL' | 'PAYMENT' | 'REFUND' | 'CORRECTION'
+  }) => api.post('/transactions/', data),
+
   // Отзывы
   getReviews: (params?: any) => api.get('/reviews/', { params }),
+  createReview: (data: {
+    id_order: number
+    id_user_target: number
+    rating: number
+    comment: string
+  }) => api.post('/reviews/', data),
 
   // Специализации
   getSpecializations: () => api.get('/specializations/'),
 
- getOrders: (params?: any) => api.get('/orders/', { params }),
+  // Заказы
+  getOrders: (params?: any) => api.get('/orders/', { params }),
   createOrder: (data: {
     id_user_executor: number
     id_service: number
@@ -71,12 +84,12 @@ export const profileAPI = {
   }) => api.post('/orders/', data),
   
   updateOrderStatus: (id: number, status: string) => 
-    api.patch(`/orders/${id}/status`, { status }),
+    api.put(`/orders/${id}/`, { status }),
 
   cancelOrder: (id: number) => api.delete(`/orders/${id}`),
   
-
   getOrderDetails: (id: number) => api.get(`/orders/${id}`),
+  getExecutors: (params?: any) => api.get('/users/', { params: { ...params, role: 'EXECUTOR' } })
 }
 
 export default api

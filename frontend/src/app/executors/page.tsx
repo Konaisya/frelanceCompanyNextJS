@@ -1,39 +1,17 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import api from '@/lib/api/axios'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import api, { profileAPI } from '@/lib/api/axios'
 import ExecutorsHero from '@/components/ui/executors/ExecutorsHero'
 import ExecutorsGrid from '@/components/ui/executors/ExecutorsGrid'
 import ExecutorDrawer from '@/components/ui/executors/ExecutorDrawer'
 import ExecutorsFilters from '@/components/ui/executors/ExecutorsFilters'
 import { Service } from '@/types/service'
-
-interface Executor {
-  id: number
-  name: string
-  image: string
-  rating?: number
-  completed_projects?: number
-  skills?: string[]
-  price_range?: [number, number]
-  experience?: string
-  specializations?: string[]
-}
-
-
-const mockSkills = [
-  ['UI/UX', 'Figma', 'Prototyping'],
-  ['React', 'TypeScript', 'Next.js'],
-  ['Python', 'Django', 'PostgreSQL'],
-  ['Mobile', 'React Native', 'iOS'],
-  ['Backend', 'Node.js', 'MongoDB'],
-  ['DevOps', 'AWS', 'Docker'],
-  ['Design', 'Photoshop', 'Illustrator'],
-  ['Marketing', 'SEO', 'Analytics']
-]
+import { Executor, UserResponse, Review } from '@/types/executor'
 
 export default function ExecutorsPage() {
   const [executors, setExecutors] = useState<Executor[]>([])
+  const [executorsServices, setExecutorsServices] = useState<Record<number, Service[]>>({})
   const [filters, setFilters] = useState({
     search: '',
     specializations: [] as string[],
@@ -46,44 +24,118 @@ export default function ExecutorsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  useEffect(() => {
-    fetchExecutors()
-  }, [])
 
-  const fetchExecutors = async () => {
-    setIsLoading(true)
+
+  const calculateAverageRating = (reviews: Review[]): number => {
+    if (reviews.length === 0) return 0
+    const sum = reviews.reduce((total, review) => total + review.rating, 0)
+    return Number((sum / reviews.length).toFixed(1))
+  }
+
+  const getCompletedOrdersCount = async (userId: number): Promise<number> => {
     try {
-      const res = await api.get<Executor[]>('/users/', { params: { role: 'EXECUTOR' } })
-
-      const executorsWithData = res.data.map((executor, index) => ({
-        ...executor,
-        rating: 4.5 + Math.random() * 0.5,
-        completed_projects: Math.floor(Math.random() * 50) + 10,
-        skills: mockSkills[index % mockSkills.length],
-        price_range: [Math.floor(Math.random() * 5000) + 1000, Math.floor(Math.random() * 50000) + 20000] as [number, number],
-        experience: ['junior', 'middle', 'senior', 'lead'][index % 4],
-        specializations: ['frontend', 'design', 'backend', 'mobile', 'fullstack'][index % 5].split(',')
-      }))
-
-      setExecutors(executorsWithData)
+      const response = await api.get('/orders/', { 
+        params: { 
+          id_user_executor: userId,
+          status: 'COMPLETED'
+        } 
+      })
+      return response.data.length
     } catch (error) {
-      console.error('Failed to fetch executors:', error)
-      const mockExecutors: Executor[] = Array.from({ length: 12 }, (_, i) => ({
-        id: i + 1,
-        name: `Исполнитель ${i + 1}`,
-        image: '/default-avatar.jpg',
-        rating: 4.5 + Math.random() * 0.5,
-        completed_projects: Math.floor(Math.random() * 50) + 10,
-        skills: mockSkills[i % mockSkills.length],
-        price_range: [Math.floor(Math.random() * 5000) + 1000, Math.floor(Math.random() * 50000) + 20000],
-        experience: ['junior', 'middle', 'senior', 'lead'][i % 4],
-        specializations: ['frontend', 'design', 'backend', 'mobile', 'fullstack'][i % 5].split(',')
-      }))
-      setExecutors(mockExecutors)
-    } finally {
-      setIsLoading(false)
+      console.error('Ошибка получения заказов:', error)
+      return 0
     }
   }
+
+  const fetchExecutors = useCallback(async () => {
+  setIsLoading(true)
+  try {
+    const usersRes = await profileAPI.getExecutors()
+    const executorsData: UserResponse[] = usersRes.data
+    
+    const executorsWithData: Executor[] = []
+    const servicesByExecutor: Record<number, Service[]> = {}
+
+    const fetchPromises = executorsData.map(async (user) => {
+      try {
+        const servicesRes = await profileAPI.getServices({ id_user_executor: user.id })
+        const userServices: Service[] = servicesRes.data
+
+        if (userServices.length > 0) {
+          const reviewsRes = await profileAPI.getReviews({ id_user_target: user.id })
+          const reviews: Review[] = reviewsRes.data
+
+          const completedOrders = await getCompletedOrdersCount(user.id)
+          const averageRating = calculateAverageRating(reviews)
+
+          const skillsArray = user.skills
+            ? user.skills.split(',').map(s => s.trim())
+            : []
+
+          let minPrice = 1000
+          let maxPrice = 100000
+
+          if (userServices.length > 0) {
+            const prices = userServices.map(service => service.price)
+            minPrice = Math.min(...prices)
+            maxPrice = Math.max(...prices)
+          }
+
+          const executor: Executor = {
+            id: user.id,
+            name: user.name,
+            image: user.image,
+            role: 'EXECUTOR',
+            email: '',
+            balance: 0,
+            specialization: user.specialization || { id: 0, name: '' },
+            contacts: '',
+            experience: user.experience || 0,
+            skills: user.skills || '',
+            hourly_rate: 0,
+            description: user.description || '',
+            rating: averageRating,
+            completed_orders: completedOrders,
+            services_count: userServices.length,
+            price_range: [minPrice, maxPrice],
+            specializations_list: skillsArray
+          }
+
+          executorsWithData.push(executor)
+
+          servicesByExecutor[user.id] = userServices.map(service => ({
+            ...service,
+            user_executor: {
+              id: user.id,
+              name: user.name,
+              image: user.image,
+              rating: averageRating,
+              completed_orders: completedOrders
+            }
+          }))
+        }
+      } catch (error) {
+        console.error(`Ошибка при получении данных исполнителя ${user.id}:`, error)
+      }
+    })
+
+    await Promise.all(fetchPromises)
+
+    executorsWithData.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+
+    setExecutors(executorsWithData)
+    setExecutorsServices(servicesByExecutor)
+  } catch (error) {
+    console.error('Failed to fetch executors:', error)
+  } finally {
+    setIsLoading(false)
+  }
+}, [])
+
+  useEffect(() => {
+    fetchExecutors()
+  }, [fetchExecutors])
+
 
   const filteredExecutors = useMemo(() => {
     return executors
@@ -91,17 +143,22 @@ export default function ExecutorsPage() {
         if (filters.search.trim()) {
           const query = filters.search.toLowerCase()
           return e.name.toLowerCase().includes(query) ||
-            e.skills?.some(skill => skill.toLowerCase().includes(query))
+            e.skills.toLowerCase().includes(query) ||
+            e.specialization.name.toLowerCase().includes(query)
         }
         return true
       })
       .filter(e => {
         if (filters.specializations.length === 0) return true
-        return e.specializations?.some(spec => filters.specializations.includes(spec))
+        const specName = e.specialization?.name.toLowerCase()
+        return filters.specializations.some(spec => specName.includes(spec.toLowerCase()))
       })
       .filter(e => {
         if (filters.experience.length === 0) return true
-        return e.experience && filters.experience.includes(e.experience)
+        let experienceLevel = 'junior'
+        if (e.experience >= 5) experienceLevel = 'senior'
+        else if (e.experience >= 2) experienceLevel = 'middle'
+        return filters.experience.includes(experienceLevel)
       })
       .filter(e => {
         if (!e.price_range) return true
@@ -114,32 +171,26 @@ export default function ExecutorsPage() {
           case 'rating': return (b.rating || 0) - (a.rating || 0)
           case 'price_low': return (a.price_range?.[0] || 0) - (b.price_range?.[0] || 0)
           case 'price_high': return (b.price_range?.[1] || 0) - (a.price_range?.[1] || 0)
+          case 'services': return (b.services_count || 0) - (a.services_count || 0)
+          case 'orders': return (b.completed_orders || 0) - (a.completed_orders || 0)
+          case 'experience': return b.experience - a.experience
           case 'newest': return b.id - a.id
           case 'popularity':
-          default: return (b.completed_projects || 0) - (a.completed_projects || 0)
+          default: return (b.completed_orders || 0) - (a.completed_orders || 0)
         }
       })
   }, [executors, filters])
 
-  const handleExecutorSelect = async (executor: Executor) => {
+  const handleExecutorSelect = (executor: Executor) => {
     setSelectedExecutor(executor)
     setIsDrawerOpen(true)
 
-    try {
-      const res = await api.get<Service[]>('/services', { params: { id_user_executor: executor.id } })
-
-      // Приведение user_executor к обязательному полю
-      const servicesWithExecutor = res.data.map(service => ({
-        ...service,
-        user_executor: service.user_executor || { name: executor.name, image: executor.image }
-      }))
-
-      setServices(servicesWithExecutor)
-    } catch {
+    if (executorsServices[executor.id]) {
+      setServices(executorsServices[executor.id])
+    } else {
       setServices([])
     }
   }
-
 
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false)
@@ -198,11 +249,14 @@ export default function ExecutorsPage() {
             {filteredExecutors.length === 0 && (
               <div className="text-center py-16">
                 <h3 className="text-xl font-bold mb-2">Исполнители не найдены</h3>
+                <p className="text-[var(--muted)] mb-4">
+                  Попробуйте изменить параметры поиска
+                </p>
                 <button
                   onClick={handleResetAllFilters}
                   className="px-6 py-3 bg-[var(--accent)] text-[var(--accent-text)] rounded-lg hover:bg-[var(--accent)]/90 transition-colors"
                 >
-                  Показать всех исполнителей
+                  Сбросить фильтры
                 </button>
               </div>
             )}

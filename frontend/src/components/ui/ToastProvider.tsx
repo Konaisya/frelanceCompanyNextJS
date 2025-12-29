@@ -33,8 +33,15 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
   const showToast = (toast: Omit<Toast, 'id'>) => {
     const id = crypto.randomUUID()
 
+    const toastData = {
+      ...toast,
+      id,
+      title: String(toast.title || ''),
+      description: toast.description ? String(toast.description) : undefined
+    }
+
     setToasts(prev => {
-      const newToasts = [...prev, { ...toast, id }]
+      const newToasts = [...prev, toastData]
       if (newToasts.length > 3) {
         const oldestId = newToasts[0].id
         setTimeout(() => removeToast(oldestId), 300)
@@ -93,12 +100,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
               onDragEnd={(e, info) => {
                 if (Math.abs(info.offset.x) > 100) removeToast(toast.id)
               }}
-              className={`
-                relative w-80 p-4 rounded-lg shadow-2xl border
-                backdrop-blur-xl bg-white/10 border-white/10
-                cursor-pointer select-none pointer-events-auto
-                overflow-hidden group
-              `}
+              className="relative w-80 p-4 rounded-lg shadow-2xl border backdrop-blur-xl bg-white/10 border-white/10 cursor-pointer select-none pointer-events-auto overflow-hidden group"
             >
               <motion.div
                 className="absolute top-0 left-0 h-1.5 rounded-t-2xl"
@@ -108,7 +110,6 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
                 style={{
                   background: `linear-gradient(to right, ${typeColors[toast.type || 'info'][0]}, ${typeColors[toast.type || 'info'][1]})`,
                   boxShadow: `0 0 6px ${typeColors[toast.type || 'info'][1]}80`,
-
                 }}
               />
 
@@ -118,7 +119,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold  text-sm truncate">{toast.title}</h4>
+                  <h4 className="font-semibold text-sm truncate">{toast.title}</h4>
                   {toast.description && (
                     <p className="text-sm mt-1 line-clamp-2">{toast.description}</p>
                   )}
