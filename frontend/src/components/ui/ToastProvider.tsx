@@ -47,9 +47,9 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
   }
 
   const typeColors = {
-    success: ['#4ade80', '#22c55e'], // зелёный градиент
-    error: ['#f87171', '#ef4444'],   // красный градиент
-    info: ['#60a5fa', '#3b82f6'],    // синий градиент
+    success: ['#4ade80', '#22c55e'],
+    error: ['#f87171', '#ef4444'],   
+    info: ['#60a5fa', '#3b82f6'],    
   }
 
   const typeIcons = {
@@ -94,13 +94,12 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
                 if (Math.abs(info.offset.x) > 100) removeToast(toast.id)
               }}
               className={`
-                relative w-80 p-4 rounded-2xl shadow-2xl border
-                backdrop-blur-lg bg-white/10 border-white/20
+                relative w-80 p-4 rounded-lg shadow-2xl border
+                backdrop-blur-xl bg-white/10 border-white/10
                 cursor-pointer select-none pointer-events-auto
                 overflow-hidden group
               `}
             >
-              {/* Полоска таймера с градиентом */}
               <motion.div
                 className="absolute top-0 left-0 h-1.5 rounded-t-2xl"
                 initial={{ width: '100%' }}
@@ -109,18 +108,19 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
                 style={{
                   background: `linear-gradient(to right, ${typeColors[toast.type || 'info'][0]}, ${typeColors[toast.type || 'info'][1]})`,
                   boxShadow: `0 0 6px ${typeColors[toast.type || 'info'][1]}80`,
+
                 }}
               />
 
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center bg-white/20 backdrop-blur-sm">
-                  <span className="text-white font-bold text-sm">{typeIcons[toast.type || 'info']}</span>
+                  <span className="font-bold text-sm">{typeIcons[toast.type || 'info']}</span>
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-white text-sm truncate">{toast.title}</h4>
+                  <h4 className="font-semibold  text-sm truncate">{toast.title}</h4>
                   {toast.description && (
-                    <p className="text-sm text-white/80 mt-1 line-clamp-2">{toast.description}</p>
+                    <p className="text-sm mt-1 line-clamp-2">{toast.description}</p>
                   )}
                 </div>
 

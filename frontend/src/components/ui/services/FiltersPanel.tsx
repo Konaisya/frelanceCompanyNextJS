@@ -158,31 +158,6 @@ export default function FiltersPanel({ onFilterChange }: Props) {
           ))}
         </select>
       </div>
-
-      <div className="flex flex-col gap-2">
-        <span className="text-sm opacity-70">Исполнитель</span>
-        <select
-          value={selectedExecutor ?? ''}
-          onChange={(e) =>
-            setSelectedExecutor(e.target.value ? Number(e.target.value) : null)
-          }
-          className="
-            bg-white/5
-            border border-white/10
-            rounded-xl
-            p-2
-            backdrop-blur-xl
-            outline-none
-          "
-        >
-          <option value="">Все</option>
-          {executors.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.name}
-            </option>
-          ))}
-        </select>
-      </div>
     </motion.aside>
   )
 }

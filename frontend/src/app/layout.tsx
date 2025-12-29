@@ -5,6 +5,8 @@ import ThemeProvider from "@/components/ThemeProvider";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/main/Footer";
 import ToastProvider from "@/components/ui/ToastProvider";
+import { AuthProvider } from "@/components/ui/login/AuthProvider";
+import { ChatProvider } from "@/components/ui/chat/ChatProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,10 +35,14 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <div className="min-h-screen bg-bg text-text transition-colors duration-200">
-            <Navbar />
-            <ToastProvider>
-            {children}
-            </ToastProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <ChatProvider>
+                  <Navbar />
+                  {children} 
+                </ChatProvider>
+              </ToastProvider>
+            </AuthProvider>
           </div>
         </ThemeProvider>
         <Footer />

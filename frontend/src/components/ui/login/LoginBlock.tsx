@@ -6,12 +6,15 @@ import { authService } from '@/lib/api/authService'
 import { ArrowLeft, Mail, Lock } from 'lucide-react'
 import axios from 'axios'
 import { LoginProps } from '@/types/auth.types'
+import { useAuth } from '@/components/ui/login/AuthProvider'
+
 
 export default function LoginBlock({ onBack, defaultEmail }: LoginProps) {
   const [form, setForm] = useState({
     email: defaultEmail ?? '',
     password: '',
   })
+  const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -21,27 +24,34 @@ export default function LoginBlock({ onBack, defaultEmail }: LoginProps) {
     }
   }, [defaultEmail])
 
-  const submit = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      await authService.login({
-        email: form.email.trim(),
-        password: form.password,
-      })
-      alert('Вход выполнен!')
-    } catch (e: unknown) {
-        if (axios.isAxiosError(e)) {
-          if (e.response?.status === 422) {
-            setError('Неверный email или пароль')
-          } else {
-            setError('Произошла ошибка')
-          }
-        } else {
-          setError('Произошла ошибка')
-        }
+const submit = async () => {
+  if (loading) return
+
+  setLoading(true)
+  setError('')
+
+  try {
+    const res = await authService.login({
+      email: form.email.trim(),
+      password: form.password,
+    })
+    await login(res.access_token)
+
+  } catch (e: unknown) {
+    if (axios.isAxiosError(e)) {
+      if (e.response?.status === 422) {
+        setError('Неверный email или пароль')
+      } else {
+        setError('Произошла ошибка')
+      }
+    } else {
+      setError('Произошла ошибка')
     }
+  } finally {
+    setLoading(false)
   }
+}
+
 
   return (
     <motion.div

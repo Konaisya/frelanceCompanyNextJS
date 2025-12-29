@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { authService } from '@/lib/api/authService'
-import { BackProps } from '@/types/auth.types'
 import { ArrowLeft, User, Mail, Lock, Briefcase } from 'lucide-react'
 import { SignupProps } from '@/types/auth.types'
+import { useToast } from '../ToastProvider'
+import { getErrorMessage } from './errormsg'
 
 export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
+  const { showToast } = useToast()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -16,6 +18,26 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
     description: '',
   })
   const [loading, setLoading] = useState(false)
+  const validate = () => {
+  if (!form.name || !form.email || !form.password || !form.skills) {
+    showToast({
+      type: 'error',
+      title: 'Не все поля заполнены',
+      description: 'Имя, Email, пароль и навыки обязательны',
+    })
+    return false
+  }
+
+  if (form.password.length < 6) {
+    showToast({
+      type: 'error',
+      title: 'Пароль слишком короткий',
+    })
+    return false
+  }
+
+  return true
+}
 
   const handleChange = (field: keyof typeof form) => 
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -23,30 +45,46 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
     }
 
   const submit = async () => {
-    setLoading(true)
-    try {
-      await authService.signup({
-        user: {
-          name: form.name,
-          email: form.email,
-          password: form.password,
-          role: 'EXECUTOR',
-        },
-        executor_profile: {
-          id_specialization: 1,
-          contacts: '',
-          experience: 0,
-          skills: form.skills,
-          hourly_rate: 0,
-          description: form.description,
-        },
-        customer_profile: null,
-      })
-      onSuccess(form.email)
-    } finally {
-      setLoading(false)
-    }
+  if (loading) return
+  if (!validate()) return
+
+  setLoading(true)
+  try {
+    await authService.signup({
+      user: {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: 'EXECUTOR',
+      },
+      executor_profile: {
+        id_specialization: 1,
+        contacts: '',
+        experience: 0,
+        skills: form.skills,
+        hourly_rate: 0,
+        description: form.description,
+      },
+      customer_profile: null,
+    })
+
+    showToast({
+      type: 'success',
+      title: 'Аккаунт создан',
+      description: 'Теперь вы можете войти',
+    })
+
+    onSuccess(form.email)
+} catch (e: unknown) {
+  showToast({
+    type: 'error',
+    title: 'Ошибка регистрации',
+    description: getErrorMessage(e),
+  })
+  } finally {
+    setLoading(false)
   }
+}
 
 
   const inputs = [
@@ -71,7 +109,13 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1, duration: 0.3 }}
           onClick={onBack} 
-          className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 mb-4 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
+          className="
+            flex items-center gap-2 text-sm
+            text-muted hover:text-text
+            mb-4 p-2 rounded-lg
+            transition-colors
+            hover:bg-[color-mix(in_srgb,var(--card)_90%,transparent)]
+          "
         >
           <ArrowLeft className="w-4 h-4" />
           Назад к выбору
@@ -83,10 +127,10 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
           transition={{ delay: 0.2, duration: 0.3 }}
           className="mb-2"
         >
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="text-xl font-semibold">
             Регистрация исполнителя
           </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm">
             Создайте аккаунт, чтобы предлагать услуги
           </p>
         </motion.div>
@@ -106,14 +150,20 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
             transition={{ delay: 0.3 + (index * 0.05), duration: 0.3 }}
             className="relative"
           >
-            <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+            <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
-              className="w-full pl-10 pr-3 py-3 text-sm bg-white/60 dark:bg-white/5 backdrop-blur-sm 
-                       border border-gray-200 dark:border-white/10 rounded-xl 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
-                       placeholder:text-gray-400 dark:placeholder:text-gray-500
-                       text-gray-900 dark:text-white
-                       transition-all duration-200"
+              className="
+                w-full pl-10 pr-3 py-3 text-sm
+                bg-[var(--glass)] backdrop-blur-sm
+                border border-[color-mix(in_srgb,var(--text)_12%,transparent)]
+                rounded-xl
+                focus:outline-none
+                focus:ring-2 focus:ring-[var(--accent)]/30
+                focus:border-[var(--accent)]
+                placeholder:text-muted
+                text-text
+                transition-all duration-200
+              "
               placeholder={placeholder}
               type={type}
               value={value}
@@ -130,16 +180,24 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
         >
           <Briefcase className="absolute left-3 top-3 w-4 h-4 text-gray-400 dark:text-gray-500" />
           <textarea
+            className="
+              w-full pl-10 pr-3 py-3 text-sm
+              bg-[var(--glass)] backdrop-blur-sm
+              border border-[color-mix(in_srgb,var(--text)_12%,transparent)]
+              rounded-xl
+              focus:outline-none
+              focus:ring-2 focus:ring-[var(--accent)]/30
+              focus:border-[var(--accent)]
+              placeholder:text-muted
+              text-text
+              transition-all duration-200
+              resize-none h-24
+            "
             placeholder="Описание"
             value={form.description}
             onChange={handleChange('description')}
-            className="w-full pl-10 pr-3 py-3 text-sm bg-white/60 dark:bg-white/5 backdrop-blur-sm
-                     border border-gray-200 dark:border-white/10 rounded-xl
-                     focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500
-                     placeholder:text-gray-400 dark:placeholder:text-gray-500
-                     text-gray-900 dark:text-white
-                     transition-all duration-200 resize-none h-24"
           />
+
         </motion.div>
       </motion.div>
 
@@ -149,7 +207,7 @@ export default function SignupExecutor({ onBack, onSuccess }: SignupProps) {
         transition={{ delay: 0.6, duration: 0.3 }}
         onClick={submit}
         disabled={loading}
-        className="w-full mt-6 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700
+        className="w-full mt-6 px-4 py-3 bg-[var(--accent)]
                  text-white font-medium rounded-xl
                  disabled:opacity-50 disabled:cursor-not-allowed
                  flex items-center justify-center gap-2

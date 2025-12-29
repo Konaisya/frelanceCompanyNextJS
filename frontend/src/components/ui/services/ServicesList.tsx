@@ -39,12 +39,12 @@ export default function ServicesList() {
     fetchServices()
   }, [])
 
-  const filteredServices = services
-    .filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
-    .filter(s => !filters.id_specialization || s.specialization.id === filters.id_specialization)
-    .filter(s => !filters.id_user_executor || s.user_executor.id === filters.id_user_executor)
-    .filter(s => (filters.priceMin ?? 0) <= s.price && s.price <= (filters.priceMax ?? Infinity))
-    .filter(s => (filters.deliveryTimeMin ?? 0) <= s.delivery_time && s.delivery_time <= (filters.deliveryTimeMax ?? Infinity))
+const filteredServices = services
+  .filter(s => s.name.toLowerCase().includes(search.toLowerCase()))
+  .filter(s => !filters.id_specialization || s.specialization?.id === filters.id_specialization)
+  .filter(s => !filters.id_user_executor || s.user_executor?.id === filters.id_user_executor)
+  .filter(s => (filters.priceMin ?? 0) <= s.price && s.price <= (filters.priceMax ?? Infinity))
+  .filter(s => (filters.deliveryTimeMin ?? 0) <= s.delivery_time && s.delivery_time <= (filters.deliveryTimeMax ?? Infinity))
 
   return (
     <div className="flex gap-10 container mx-auto px-4 pb-32 relative">

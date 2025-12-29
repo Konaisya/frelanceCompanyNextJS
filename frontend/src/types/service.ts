@@ -1,13 +1,19 @@
-import { Executor } from "./executor"
-import { Specialization } from "./specialization"
-
-
 export interface Service {
   id: number
   name: string
   description: string
-  specialization: Specialization
-  user_executor: Executor
   price: number
   delivery_time: number
+  id_user_executor: number
+  specialization: {
+    id: number
+    name: string
+  }
+  user_executor: {
+    id: number
+    name: string
+    image: string
+    rating?: number
+    completed_orders?: number
+  }
 }

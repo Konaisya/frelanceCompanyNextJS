@@ -34,7 +34,7 @@ async def get_all_services(name: str | None = Query(None),
         executor_profile = user_service.get_executor_filter_by(id=user.id_executor_profile)
 
         executor_profile_dict = executor_profile.__dict__
-        
+        executor_profile_dict.pop('id')
         exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
         executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
 
