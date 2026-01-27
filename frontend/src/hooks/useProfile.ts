@@ -1,11 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Service, Review } from '@/types/profile'
+import { User, Service, Review,  CreateServiceData} from '@/lib/api/axios'
 import { useToast } from '@/components/ui/ToastProvider'
 import { useAuth } from '@/components/ui/login/AuthProvider'
 import { profileAPI } from '@/lib/api/axios'
+
+interface ApiError {
+  response?: {
+    status: number
+    data?: {
+      message?: string
+    }
+  }
+  message?: string
+}
 
 export const useProfile = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -19,18 +29,7 @@ export const useProfile = () => {
   const { isAuth, isLoading, logout } = useAuth()
   const { showToast } = useToast()
 
-  useEffect(() => {
-    if (isLoading) return
-
-    if (!isAuth) {
-      router.push('/login')
-      return
-    }
-
-    fetchProfileData()
-  }, [isAuth, isLoading])
-
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -57,17 +56,29 @@ export const useProfile = () => {
       } else {
         setServices([])
       }
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const error = err as ApiError
+      if (error.response?.status === 401) {
         logout()
         setError('Сессия истекла. Пожалуйста, войдите снова.')
       } else {
-        setError(err.response?.data?.message || 'Не удалось загрузить данные профиля')
+        setError(error.response?.data?.message || 'Не удалось загрузить данные профиля')
       }
     } finally {
       setLoading(false)
     }
-  }
+  }, [logout])
+
+  useEffect(() => {
+    if (isLoading) return
+
+    if (!isAuth) {
+      router.push('/login')
+      return
+    }
+
+    fetchProfileData()
+  }, [isAuth, isLoading, router, fetchProfileData])
 
   const updateAvatar = async (imageFile: File) => {
     if (!user) return false
@@ -75,11 +86,15 @@ export const useProfile = () => {
     try {
       const response = await profileAPI.updateAvatar(user.id, imageFile)
 
-      setUser(prev =>
-        prev
-          ? { ...prev, image: response.data.image }
-          : response.data
-      )
+      setUser(prev => {
+        if (prev) {
+          return {
+            ...prev,
+            image: response.data.image
+          }
+        }
+        return response.data
+      })
 
       showToast({
         title: 'Успешно',
@@ -98,7 +113,7 @@ export const useProfile = () => {
     }
   }
 
-  const createService = async (serviceData: Omit<Service, 'id'>) => {
+  const createService = async (serviceData: CreateServiceData & { id_user_executor: number }) => {
     try {
       const response = await profileAPI.createService(serviceData)
       const newService = response.data
@@ -114,8 +129,9 @@ export const useProfile = () => {
         type: 'success'
       })
       return newService
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const error = err as ApiError
+      if (error.response?.status === 401) {
         logout()
       } else {
         showToast({
@@ -130,7 +146,7 @@ export const useProfile = () => {
 
   const updateService = async (id: number, serviceData: Partial<Service>) => {
     try {
-      await profileAPI.updateService(id, serviceData)
+      await profileAPI.updateService(id, serviceData as Partial<CreateServiceData>)
       setServices(prev => prev.map(service => 
         service.id === id ? { ...service, ...serviceData } : service
       ))
@@ -140,8 +156,9 @@ export const useProfile = () => {
         type: 'success'
       })
       return true
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const error = err as ApiError
+      if (error.response?.status === 401) {
         logout()
       } else {
         showToast({
@@ -164,8 +181,9 @@ export const useProfile = () => {
         type: 'success'
       })
       return true
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err: unknown) {
+      const error = err as ApiError
+      if (error.response?.status === 401) {
         logout()
       } else {
         showToast({

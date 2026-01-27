@@ -6,11 +6,14 @@ import ExecutorsHero from '@/components/ui/executors/ExecutorsHero'
 import ExecutorsGrid from '@/components/ui/executors/ExecutorsGrid'
 import ExecutorDrawer from '@/components/ui/executors/ExecutorDrawer'
 import ExecutorsFilters from '@/components/ui/executors/ExecutorsFilters'
+import { useToast } from '@/components/ui/ToastProvider'
 import { Service } from '@/types/service'
 import { Executor, UserResponse, Review } from '@/types/executor'
 
+
 export default function ExecutorsPage() {
   const [executors, setExecutors] = useState<Executor[]>([])
+  const { showToast } = useToast()
   const [executorsServices, setExecutorsServices] = useState<Record<number, Service[]>>({})
   const [filters, setFilters] = useState({
     search: '',
@@ -41,96 +44,99 @@ export default function ExecutorsPage() {
         } 
       })
       return response.data.length
-    } catch (error) {
-      console.error('Ошибка получения заказов:', error)
+    } catch {
       return 0
-    }
+  }
   }
 
   const fetchExecutors = useCallback(async () => {
-  setIsLoading(true)
-  try {
-    const usersRes = await profileAPI.getExecutors()
-    const executorsData: UserResponse[] = usersRes.data
-    
-    const executorsWithData: Executor[] = []
-    const servicesByExecutor: Record<number, Service[]> = {}
+    setIsLoading(true)
+    try {
+      const usersRes = await profileAPI.getExecutors()
+      const executorsData: UserResponse[] = usersRes.data
+      
+      const executorsWithData: Executor[] = []
+      const servicesByExecutor: Record<number, Service[]> = {}
 
-    const fetchPromises = executorsData.map(async (user) => {
-      try {
-        const servicesRes = await profileAPI.getServices({ id_user_executor: user.id })
-        const userServices: Service[] = servicesRes.data
-
-        if (userServices.length > 0) {
-          const reviewsRes = await profileAPI.getReviews({ id_user_target: user.id })
-          const reviews: Review[] = reviewsRes.data
-
-          const completedOrders = await getCompletedOrdersCount(user.id)
-          const averageRating = calculateAverageRating(reviews)
-
-          const skillsArray = user.skills
-            ? user.skills.split(',').map(s => s.trim())
-            : []
-
-          let minPrice = 1000
-          let maxPrice = 100000
+      const fetchPromises = executorsData.map(async (user) => {
+        try {
+          const servicesRes = await profileAPI.getServices({ id_user_executor: user.id })
+          const userServices: Service[] = servicesRes.data
 
           if (userServices.length > 0) {
-            const prices = userServices.map(service => service.price)
-            minPrice = Math.min(...prices)
-            maxPrice = Math.max(...prices)
-          }
+            const reviewsRes = await profileAPI.getReviews({ id_user_target: user.id })
+            const reviews: Review[] = reviewsRes.data
 
-          const executor: Executor = {
-            id: user.id,
-            name: user.name,
-            image: user.image,
-            role: 'EXECUTOR',
-            email: '',
-            balance: 0,
-            specialization: user.specialization || { id: 0, name: '' },
-            contacts: '',
-            experience: user.experience || 0,
-            skills: user.skills || '',
-            hourly_rate: 0,
-            description: user.description || '',
-            rating: averageRating,
-            completed_orders: completedOrders,
-            services_count: userServices.length,
-            price_range: [minPrice, maxPrice],
-            specializations_list: skillsArray
-          }
+            const completedOrders = await getCompletedOrdersCount(user.id)
+            const averageRating = calculateAverageRating(reviews)
 
-          executorsWithData.push(executor)
+            const skillsArray = user.skills
+              ? user.skills.split(',').map(s => s.trim())
+              : []
 
-          servicesByExecutor[user.id] = userServices.map(service => ({
-            ...service,
-            user_executor: {
+            let minPrice = 1000
+            let maxPrice = 100000
+
+            if (userServices.length > 0) {
+              const prices = userServices.map(service => service.price)
+              minPrice = Math.min(...prices)
+              maxPrice = Math.max(...prices)
+            }
+
+            const executor: Executor = {
               id: user.id,
               name: user.name,
               image: user.image,
+              role: 'EXECUTOR',
+              email: '',
+              balance: 0,
+              specialization: user.specialization || { id: 0, name: '' },
+              contacts: '',
+              experience: user.experience || 0,
+              skills: user.skills || '',
+              hourly_rate: 0,
+              description: user.description || '',
               rating: averageRating,
-              completed_orders: completedOrders
+              completed_orders: completedOrders,
+              services_count: userServices.length,
+              price_range: [minPrice, maxPrice],
+              specializations_list: skillsArray
             }
-          }))
+
+            executorsWithData.push(executor)
+
+            servicesByExecutor[user.id] = userServices.map(service => ({
+              ...service,
+              user_executor: {
+                id: user.id,
+                name: user.name,
+                image: user.image,
+                rating: averageRating,
+                completed_orders: completedOrders
+              }
+            }))
+          }
+      } catch {
+          showToast({
+            type: 'error',
+            title: 'Ошибка загрузки исполнителя',
+            description: `ID: ${user.id}`
+          })
         }
-      } catch (error) {
-        console.error(`Ошибка при получении данных исполнителя ${user.id}:`, error)
-      }
-    })
+      })
 
-    await Promise.all(fetchPromises)
+      await Promise.all(fetchPromises)
 
-    executorsWithData.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+      executorsWithData.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
 
-    setExecutors(executorsWithData)
-    setExecutorsServices(servicesByExecutor)
-  } catch (error) {
-    console.error('Failed to fetch executors:', error)
-  } finally {
-    setIsLoading(false)
-  }
-}, [])
+      setExecutors(executorsWithData)
+      setExecutorsServices(servicesByExecutor)
+    } catch (error) {
+      console.error('Failed to fetch executors:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [showToast]) 
 
   useEffect(() => {
     fetchExecutors()

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Button from '../Button'
+import Link from 'next/link'
 
 export default function HeroSection() {
   return (
@@ -32,9 +33,15 @@ export default function HeroSection() {
         transition={{ duration: 1.2 }}
         className="flex gap-4 flex-wrap justify-center"
       >
-        <Button>Найти заказы</Button>
-        <Button className="bg-transparent border border-[var(--accent)] text-[var(--accent)] hover:opacity-80">
-          Стать исполнителем
+        <Button>
+          <Link href="/login">
+          Найти заказы
+          </Link> 
+        </Button>
+        <Button className="bg-transparent border border-[var(--accent)] hover:opacity-80">
+          <Link className='text-[var(--accent)]' href="/login">
+            Стать исполнителем
+          </Link>
         </Button>
       </motion.div>
     </section>

@@ -8,6 +8,7 @@ import axios from 'axios'
 import { LoginProps } from '@/types/auth.types'
 import { useAuth } from '@/components/ui/login/AuthProvider'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/ToastProvider'
 
 
 export default function LoginBlock({ onBack, defaultEmail }: LoginProps) {
@@ -17,6 +18,7 @@ export default function LoginBlock({ onBack, defaultEmail }: LoginProps) {
   })
   const { login } = useAuth()
   const [loading, setLoading] = useState(false)
+  const { showToast } = useToast()
   const [error, setError] = useState('')
     const router = useRouter()
   
@@ -43,12 +45,24 @@ const submit = async () => {
   } catch (e: unknown) {
     if (axios.isAxiosError(e)) {
       if (e.response?.status === 422) {
-        setError('Неверный email или пароль')
+        showToast({
+          type: 'error',
+          title: 'Ошибка входа',
+          description: 'Неверный email или пароль'
+        })
       } else {
-        setError('Произошла ошибка')
+        showToast({
+          type: 'error',
+          title: 'Ошибка входа',
+          description: 'Произошла ошибка. Попробуйте позже'
+        })
       }
     } else {
-      setError('Произошла ошибка')
+      showToast({
+        type: 'error',
+        title: 'Ошибка входа',
+        description: 'Произошла ошибка. Попробуйте позже'
+      })
     }
   } finally {
     setLoading(false)

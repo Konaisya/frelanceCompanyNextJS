@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Star, Briefcase, Sparkles, Phone } from 'lucide-react'
+import { X, Star, Briefcase, Sparkles } from 'lucide-react'
 import ServiceCard from '../services/ServiceCard'
 import { Service } from '@/types/service'
 import { useEffect} from 'react'
@@ -60,12 +60,13 @@ export default function ExecutorDrawer({ executor, services, isOpen, onClose }: 
               <div className="flex items-center justify-between p-6">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-14 h-14 rounded-full overflow-hidden ring-3 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--card)]">
+                    <div className="w-14 h-14 overflow-hidden rounded-full  ring-3 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--card)]">
                       <Image
+                        
                         src={`http://127.0.0.1:8000/${executor.image}`}
                         alt={executor.name}
                         fill
-                        className="object-cover"
+                        className="object-cover rounded-full overflow-hidden"
                       />
                     </div>
                     <div className="absolute -bottom-1 -right-1 bg-[var(--accent)] text-[var(--accent-text)] rounded-full p-1">

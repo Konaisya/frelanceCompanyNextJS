@@ -2,8 +2,18 @@
 
 import { useState } from 'react'
 import { profileAPI } from '@/lib/api/axios'
-import { User, UpdateUserRequest, Specialization } from '@/types/profile'
+import { User, UpdateUserRequest, Specialization } from '@/lib/api/axios' // Изменено импорт
 import { useToast } from '@/components/ui/ToastProvider'
+
+interface ApiError {
+  response?: {
+    data?: {
+      detail?: string
+      message?: string
+    }
+  }
+  message?: string
+}
 
 export const useEditProfile = (user: User) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -36,11 +46,12 @@ export const useEditProfile = (user: User) => {
       })
       
       return true
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating profile:', error)
       
-      const errorMessage = error.response?.data?.detail || 
-                          error.response?.data?.message || 
+      const apiError = error as ApiError
+      const errorMessage = apiError.response?.data?.detail || 
+                          apiError.response?.data?.message || 
                           'Не удалось обновить профиль'
       
       showToast({

@@ -10,7 +10,7 @@ import ReviewsSection from './ReviewsSection'
 import OrdersSection from './OrdersSection'
 import CreateServiceModal from './CreateServiceModal'
 import EditProfileModal from './EditProfileModal'
-import { Service, CreateServiceData } from '@/types/profile'
+import { CreateServiceData, User, Service } from '@/lib/api/axios'
 
 const ProfilePage: React.FC = () => {
   const {
@@ -63,12 +63,14 @@ const ProfilePage: React.FC = () => {
   const handleCreateService = async (data: CreateServiceData) => {
     if (!user) return null
 
-    const newServiceData: Omit<Service, 'id'> = {
+
+    const serviceData = {
       ...data,
-      id_user_executor: user.id
+      id_user_executor: user.id,
     }
 
-    const newService = await createService(newServiceData)
+    const newService = await createService(serviceData)
+
     if (newService) {
       setLocalServices(prev => [...prev, newService])
       setIsCreateModalOpen(false)
@@ -78,7 +80,7 @@ const ProfilePage: React.FC = () => {
     return null
   }
 
-  const handleProfileUpdate = (updatedUser: any) => {
+  const handleProfileUpdate = (updatedUser: User) => {
     updateProfileData(updatedUser)
   }
 

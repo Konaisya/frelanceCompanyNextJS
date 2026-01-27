@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import SearchInput from './SearchInput'
 import FilterDropdown from './FilterDropdown'
 import SortingDropdown from './SortingDropdown'
+import { profileAPI, Specialization } from '@/lib/api/axios'
 
 interface ExecutorsFiltersProps {
   filters: {
@@ -16,14 +18,9 @@ interface ExecutorsFiltersProps {
 }
 
 export default function ExecutorsFilters({ filters, onChange }: ExecutorsFiltersProps) {
-  const specializations = [
-    { value: 'frontend', label: 'Frontend' },
-    { value: 'design', label: 'Дизайн' },
-    { value: 'backend', label: 'Backend' },
-    { value: 'mobile', label: 'Мобильная разработка' },
-    { value: 'fullstack', label: 'Fullstack' },
-    { value: 'devops', label: 'DevOps' },
-  ]
+  const [specializations, setSpecializations] = useState<Specialization[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const experienceLevels = [
     { value: 'junior', label: 'Junior' },
@@ -31,6 +28,31 @@ export default function ExecutorsFilters({ filters, onChange }: ExecutorsFilters
     { value: 'senior', label: 'Senior' },
     { value: 'lead', label: 'Lead' },
   ]
+
+  useEffect(() => {
+    const loadSpecializations = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await profileAPI.getSpecializations()
+        setSpecializations(response.data)
+      } catch (err) {
+        console.error('Ошибка загрузки специализаций:', err)
+        setError('Не удалось загрузить специализации')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadSpecializations()
+  }, [])
+
+  const mapSpecializationsToOptions = (specs: Specialization[]) => {
+    return specs.map(spec => ({
+      value: spec.name.toLowerCase(),
+      label: spec.name
+    }))
+  }
 
   return (
     <div className="space-y-6">
@@ -40,14 +62,23 @@ export default function ExecutorsFilters({ filters, onChange }: ExecutorsFilters
         onChange={(value) => onChange({ ...filters, search: value })}
       />
 
-
       <div className="flex flex-wrap items-center gap-3">
-        <FilterDropdown
-          label="Специализация"
-          options={specializations}
-          selected={filters.specializations}
-          onChange={(vals) => onChange({ ...filters, specializations: vals })}
-        />
+        {loading ? (
+          <div className="px-4 py-3 text-sm text-[var(--muted)]">
+            Загрузка специализаций...
+          </div>
+        ) : error ? (
+          <div className="px-4 py-3 text-sm text-red-500">
+            {error}
+          </div>
+        ) : (
+          <FilterDropdown
+            label="Специализация"
+            options={mapSpecializationsToOptions(specializations)}
+            selected={filters.specializations}
+            onChange={(vals) => onChange({ ...filters, specializations: vals })}
+          />
+        )}
 
         <FilterDropdown
           label="Уровень"
@@ -55,7 +86,6 @@ export default function ExecutorsFilters({ filters, onChange }: ExecutorsFilters
           selected={filters.experience}
           onChange={(vals) => onChange({ ...filters, experience: vals })}
         />
-
 
         <SortingDropdown
           value={filters.sortBy}

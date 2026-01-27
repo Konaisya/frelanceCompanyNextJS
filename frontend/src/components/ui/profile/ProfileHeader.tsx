@@ -3,7 +3,7 @@
 import React, { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { User, Mail, Edit, Settings, Wallet, Plus } from 'lucide-react'
-import { User as UserType } from '@/types/profile'
+import { User as UserType } from '@/lib/api/axios' // Изменено импорт
 import Image from 'next/image'
 import DepositModal from './DepositModal'
 
@@ -44,6 +44,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         return 'Исполнитель'
       case 'CUSTOMER':
         return 'Заказчик'
+      case 'ADMIN':
+        return 'Администратор'
       default:
         return role
     }

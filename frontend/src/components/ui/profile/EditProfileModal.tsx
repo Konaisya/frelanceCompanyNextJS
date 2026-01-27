@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Save, Mail, Phone, Briefcase, DollarSign, Award, Code, User as UserIcon } from 'lucide-react'
-import { User, Specialization, UpdateUserRequest } from '@/types/profile'
+import { User, Specialization, UpdateUserRequest } from '@/lib/api/axios'
 import { profileAPI } from '@/lib/api/axios'
 import { useToast } from '@/components/ui/ToastProvider'
 import { AxiosError } from 'axios'
@@ -72,13 +72,28 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
     value: string | number,
     section: 'user' | 'executor_profile' | 'customer_profile' = 'user'
   ) => {
-    setFormData(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
+    setFormData(prev => {
+      const newData = { ...prev }
+      
+      if (section === 'user') {
+        newData.user = {
+          ...newData.user,
+          [field]: value
+        } as UpdateUserRequest['user']
+      } else if (section === 'executor_profile') {
+        newData.executor_profile = {
+          ...newData.executor_profile,
+          [field]: value
+        } as UpdateUserRequest['executor_profile']
+      } else if (section === 'customer_profile') {
+        newData.customer_profile = {
+          ...newData.customer_profile,
+          [field]: value
+        } as UpdateUserRequest['customer_profile']
       }
-    }))
+      
+      return newData
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

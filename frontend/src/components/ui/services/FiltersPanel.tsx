@@ -20,33 +20,24 @@ interface Specialization {
   name: string
 }
 
-interface Executor {
-  id: number
-  name: string
-}
-
 export default function FiltersPanel({ onFilterChange }: Props) {
   const [specializations, setSpecializations] = useState<Specialization[]>([])
-  const [executors, setExecutors] = useState<Executor[]>([])
-
   const [price, setPrice] = useState([0, 20000])
   const [deliveryTime, setDeliveryTime] = useState([0, 500])
   const [selectedSpec, setSelectedSpec] = useState<number | null>(null)
-  const [selectedExecutor, setSelectedExecutor] = useState<number | null>(null)
 
   useEffect(() => {
-      const fetchData = async () => {
+    const fetchData = async () => {
+      try {
         const specsRes = await api.get<Specialization[]>('/specializations/')
-        const execRes = await api.get<Executor[]>('/users/', {
-          params: { role: 'EXECUTOR' },
-        })
-
         setSpecializations(specsRes.data)
-        setExecutors(execRes.data)
+      } catch (error) {
+        console.error('Error loading specializations:', error)
       }
+    }
 
-      fetchData()
-    }, [])
+    fetchData()
+  }, [])
 
   useEffect(() => {
     onFilterChange({
@@ -55,13 +46,11 @@ export default function FiltersPanel({ onFilterChange }: Props) {
       deliveryTimeMin: deliveryTime[0],
       deliveryTimeMax: deliveryTime[1],
       id_specialization: selectedSpec,
-      id_user_executor: selectedExecutor,
     })
   }, [
     price,
     deliveryTime,
     selectedSpec,
-    selectedExecutor,
     onFilterChange,
   ])
 
@@ -132,7 +121,6 @@ export default function FiltersPanel({ onFilterChange }: Props) {
           className="accent-[var(--accent)]"
         />
       </div>
-
 
       <div className="flex flex-col gap-2">
         <span className="text-sm opacity-70">Специализация</span>

@@ -10,7 +10,7 @@ interface Review {
   rating: number
   comment: string
   created_at: string
-  author?: {
+  user_author?: {
     name: string
     image: string
   }
@@ -121,7 +121,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ userId }) => {
                   </div>
                   <div>
                     <p className="font-semibold text-text">
-                      {review.author?.name || 'Аноним'}
+                      {review.user_author?.name || 'Аноним'}
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       {[...Array(5)].map((_, i) => (

@@ -7,26 +7,22 @@ import {
   AlertCircle, Package, PlayCircle, CreditCard, 
   ThumbsUp, Star, MessageSquare 
 } from 'lucide-react'
-import { profileAPI } from '@/lib/api/axios'
+import { profileAPI, Order, Review as ApiReview } from '@/lib/api/axios'
 import { useToast } from '@/components/ui/ToastProvider'
 import Button from '@/components/ui/Button'
 import CreateReviewModal from '../CreateReviewModal'
 import PaymentModal from './PaymentModal'
 
-interface Order {
-  id: number
-  name: string
-  description: string
-  price: number
-  deadline: string
-  status: 'PENDING' | 'ACCEPTED' | 'IN_WORK' | 'AWAITING_PAYMENT' | 'COMPLETED' | 'CANCELLED'
-  created_at: string
+// Локальный интерфейс Order, расширяющий API Order
+interface LocalOrder extends Omit<Order, 'status'> {
+  status: 'PENDING' | 'ACCEPTED' | 'IN_WORK' | 'AWAITING_PAYMENT' | 'COMPLETED' | 'CANCELLED' | string
   service?: { name: string }
   user_executor?: { id: number; name: string; image: string }
   user_customer?: { id: number; name: string; image: string }
 }
 
-interface Review {
+// Локальный интерфейс Review
+interface LocalReview {
   id: number
   id_order: number
   content: string
@@ -43,7 +39,7 @@ interface OrdersSectionProps {
 interface Action {
   label: string
   action: 'status' | 'payment' | 'review'
-  status?: Order['status']
+  status?: LocalOrder['status']
   variant: 'primary' | 'secondary'
   icon?: React.ReactNode
 }
@@ -61,18 +57,30 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
   isExecutor = false, 
   onStatusUpdate 
 }) => {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [reviews, setReviews] = useState<Review[]>([])
+  const [orders, setOrders] = useState<LocalOrder[]>([])
+  const [reviews, setReviews] = useState<LocalReview[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatingOrderId, setUpdatingOrderId] = useState<number | null>(null)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
-  const [orderToPay, setOrderToPay] = useState<Order | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<LocalOrder | null>(null)
+  const [orderToPay, setOrderToPay] = useState<LocalOrder | null>(null)
   const { showToast } = useToast()
 
-  // Fetch orders & reviews
+  const mapApiOrderToLocalOrder = (order: Order): LocalOrder => ({
+    ...order,
+    status: order.status as LocalOrder['status']
+  })
+
+  const mapApiReviewToLocalReview = (review: ApiReview): LocalReview => ({
+    id: review.id,
+    id_order: review.id_order,
+    content: review.comment || '',
+    rating: review.rating,
+    created_at: review.created_at
+  })
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -81,10 +89,13 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
           ? { id_user_executor: userId }
           : { id_user_customer: userId }
         const ordersResponse = await profileAPI.getOrders(ordersParams)
-        const reviewsResponse = await profileAPI.getReviews({ id_user_author: userId })
+        const reviewsResponse = await profileAPI.getReviews({ id_user_target: userId })
 
-        setOrders(ordersResponse.data)
-        setReviews(reviewsResponse.data)
+        const mappedOrders = ordersResponse.data.map(mapApiOrderToLocalOrder)
+        const mappedReviews = reviewsResponse.data.map(mapApiReviewToLocalReview)
+
+        setOrders(mappedOrders)
+        setReviews(mappedReviews)
       } catch (err: unknown) {
         const error = err as ApiError
         setError(error.response?.data?.message || 'Не удалось загрузить данные')
@@ -105,7 +116,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
 
   const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
 
-  const getStatusColor = (status: Order['status']) => {
+  const getStatusColor = (status: LocalOrder['status']) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
       case 'ACCEPTED': return 'bg-blue-500/10 text-blue-600 border-blue-500/20'
@@ -117,7 +128,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     }
   }
 
-  const getStatusIcon = (status: Order['status']) => {
+  const getStatusIcon = (status: LocalOrder['status']) => {
     switch (status) {
       case 'PENDING': return <AlertCircle className="w-4 h-4" />
       case 'ACCEPTED': return <ThumbsUp className="w-4 h-4" />
@@ -129,7 +140,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     }
   }
 
-  const getStatusText = (status: Order['status']) => {
+  const getStatusText = (status: LocalOrder['status']) => {
     switch (status) {
       case 'PENDING': return 'Ожидает подтверждения'
       case 'ACCEPTED': return 'Принят исполнителем'
@@ -141,7 +152,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     }
   }
 
-  const handleOpenPaymentModal = (order: Order) => {
+  const handleOpenPaymentModal = (order: LocalOrder) => {
     if (!order.user_executor) {
       showToast({ title: 'Ошибка', description: 'Исполнитель не найден', type: 'error' })
       return
@@ -159,7 +170,8 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     try {
       const ordersParams = isExecutor ? { id_user_executor: userId } : { id_user_customer: userId }
       const ordersResponse = await profileAPI.getOrders(ordersParams)
-      setOrders(ordersResponse.data)
+      const mappedOrders = ordersResponse.data.map(mapApiOrderToLocalOrder)
+      setOrders(mappedOrders)
     } catch {
       console.error('Ошибка обновления заказов')
     }
@@ -167,7 +179,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     onStatusUpdate?.()
   }
 
-  const handleStatusUpdate = async (orderId: number, newStatus: Order['status']) => {
+  const handleStatusUpdate = async (orderId: number, newStatus: LocalOrder['status']) => {
     try {
       setUpdatingOrderId(orderId)
       await profileAPI.updateOrderStatus(orderId, newStatus)
@@ -188,7 +200,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     }
   }
 
-  const handleLeaveReview = (order: Order) => {
+  const handleLeaveReview = (order: LocalOrder) => {
     if (order.status !== 'COMPLETED' || !order.user_executor) {
       showToast({ title: 'Ошибка', description: 'Нельзя оставить отзыв на незавершенный заказ', type: 'error' })
       return
@@ -203,8 +215,9 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
 
   const handleReviewSuccess = async () => {
     try {
-      const reviewsResponse = await profileAPI.getReviews({ id_user_author: userId })
-      setReviews(reviewsResponse.data)
+      const reviewsResponse = await profileAPI.getReviews({ id_user_target: userId })
+      const mappedReviews = reviewsResponse.data.map(mapApiReviewToLocalReview)
+      setReviews(mappedReviews)
       showToast({ title: 'Отзыв отправлен!', description: 'Спасибо за ваш отзыв', type: 'success' })
       onStatusUpdate?.()
     } catch {
@@ -212,7 +225,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     }
   }
 
-  const getAvailableActions = (order: Order): Action[] => {
+  const getAvailableActions = (order: LocalOrder): Action[] => {
     const actions: Action[] = []
 
     if (isExecutor) {
@@ -247,7 +260,7 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
     return actions
   }
 
-  const handleActionClick = async (order: Order, action: Action) => {
+  const handleActionClick = async (order: LocalOrder, action: Action) => {
     if (action.action === 'review') handleLeaveReview(order)
     else if (action.action === 'payment') handleOpenPaymentModal(order)
     else if (action.action === 'status' && action.status) await handleStatusUpdate(order.id, action.status)
@@ -258,15 +271,20 @@ const OrdersSection: React.FC<OrdersSectionProps> = ({
       setLoading(true)
       const ordersParams = isExecutor ? { id_user_executor: userId } : { id_user_customer: userId }
       const ordersResponse = await profileAPI.getOrders(ordersParams)
-      const reviewsResponse = await profileAPI.getReviews({ id_user_author: userId })
-      setOrders(ordersResponse.data)
-      setReviews(reviewsResponse.data)
+      const reviewsResponse = await profileAPI.getReviews({ id_user_target: userId })
+      
+      const mappedOrders = ordersResponse.data.map(mapApiOrderToLocalOrder)
+      const mappedReviews = reviewsResponse.data.map(mapApiReviewToLocalReview)
+      
+      setOrders(mappedOrders)
+      setReviews(mappedReviews)
     } catch {
       showToast({ title: 'Ошибка', description: 'Не удалось обновить данные', type: 'error' })
     } finally {
       setLoading(false)
     }
   }
+
   if (loading) {
     return (
       <div className="card p-6">

@@ -48,7 +48,6 @@ export default function ServiceCard({ service, currentUserId }: Props) {
             />
           </div>
 
-          {/* Основная информация - мобильная версия */}
           <div className="flex-1 sm:hidden">
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -78,7 +77,6 @@ export default function ServiceCard({ service, currentUserId }: Props) {
           </div>
         </div>
 
-        {/* Основная информация - десктоп версия */}
         <div className="hidden sm:flex flex-col flex-1 z-10">
           <div className="flex items-start justify-between mb-2">
             <div>
@@ -128,7 +126,6 @@ export default function ServiceCard({ service, currentUserId }: Props) {
           </div>
         </div>
 
-        {/* Нижняя часть для мобильной версии */}
         <div className="w-full sm:hidden border-t border-white/10 pt-3 mt-2">
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
@@ -172,7 +169,6 @@ export default function ServiceCard({ service, currentUserId }: Props) {
           </div>
         </div>
 
-        {/* Правая часть для десктоп версии */}
         <div className="hidden sm:flex flex-col items-end gap-2 shrink-0 z-10">
           <div className="flex flex-col items-end">
             <span className="text-2xl font-bold text-[var(--accent)]">
