@@ -47,7 +47,10 @@ async def get_all_reviews(id_user_author: int | None = Query(None),
     response = []
     for review in reviews:
         order = order_service.get_one_order_filter_by(id=review.id_order)
-        order_response = ShortOrderResponse(**to_dict(order))
+        if order:
+            order_response = ShortOrderResponse(**to_dict(order))
+        else:
+            order_response = None
 
         user_author = user_service.get_user_filter_by(id=review.id_user_author)
         author_response = UserResponse(**to_dict(user_author))
@@ -56,9 +59,11 @@ async def get_all_reviews(id_user_author: int | None = Query(None),
         target_response = UserResponse(**to_dict(user_target))
 
         review_dict = to_dict(review)
-        review_dict['user_author'] = author_response
-        review_dict['user_target'] = target_response
-        review_dict['order'] = order_response
+        review_dict.update({
+            'user_author': author_response,
+            'user_target': target_response,
+            'order': order_response
+        })
         response.append(ReviewResponse(**review_dict))
     
     return response
@@ -74,7 +79,10 @@ async def get_one_review(id: int,
         raise HTTPException(status_code=404, detail={'status': Status.NOT_FOUND.value})
     
     order = order_service.get_one_order_filter_by(id=review.id_order)
-    order_response = ShortOrderResponse(**to_dict(order))
+    if order:
+        order_response = ShortOrderResponse(**to_dict(order))
+    else:
+        order_response = None
 
     user_author = user_service.get_user_filter_by(id=review.id_user_author)
     author_response = UserResponse(**to_dict(user_author))
@@ -83,9 +91,11 @@ async def get_one_review(id: int,
     target_response = UserResponse(**to_dict(user_target))
 
     review_dict = to_dict(review)
-    review_dict['user_author'] = author_response
-    review_dict['user_target'] = target_response
-    review_dict['order'] = order_response
+    review_dict.update({
+        'user_author': author_response,
+        'user_target': target_response,
+        'order': order_response
+    })
     return ReviewResponse(**review_dict)
 
 @router.put('/{id}', status_code=200)

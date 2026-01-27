@@ -7,7 +7,7 @@ from .users import UserResponse
 
 class ReviewResponse(BaseModel):
     id: int
-    order: ShortOrderResponse
+    order: Optional[ShortOrderResponse] = None
     user_author: UserResponse
     user_target: UserResponse
     rating: int

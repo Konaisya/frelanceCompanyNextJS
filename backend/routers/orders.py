@@ -36,33 +36,40 @@ async def get_all_orders(id_user_customer: int | None = Query(None),
                          ):
     filter = {k: v for k, v in locals().items() if v is not None and k not in 
               {'order_service', 'service_service', 'user_service', 'current_user'}}
-    if current_user.role == Roles.CUSTOMER.value:
-        filter['id_user_customer'] = current_user.id
-    elif current_user.role == Roles.EXECUTOR.value:
-        filter['id_user_executor'] = current_user.id
+
     orders = order_service.get_all_orders_filter_by(**filter)
     if not orders:
         raise HTTPException(status_code=404, detail={'status': Status.NOT_FOUND.value})
     response = []
     for order in orders:
         user_customer = user_service.get_user_filter_by(id=order.id_user_customer)
-        customer_profile = user_service.get_customer_filter_by(id=user_customer.id_customer_profile)
-        customer_response_dict = {**user_customer.__dict__, **customer_profile.__dict__}
-        customer_response = CustomerResponse(**customer_response_dict)
+        if user_customer:
+            customer_profile = user_service.get_customer_filter_by(id=user_customer.id_customer_profile)
+            customer_response_dict = {**user_customer.__dict__, **customer_profile.__dict__}
+            customer_response = CustomerResponse(**customer_response_dict)
+        else:
+            customer_response = None
 
         user_executor = user_service.get_user_filter_by(id=order.id_user_executor)
-        executor_profile = user_service.get_executor_filter_by(id=user_executor.id_executor_profile)
-        exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
-        executor_profile_dict = executor_profile.__dict__
-        executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
-        executor_response_dict = {**user_executor.__dict__, **executor_profile_dict}
-        executor_response = ExecutorResponse(**executor_response_dict)
+        if user_executor:
+            executor_profile = user_service.get_executor_filter_by(id=user_executor.id_executor_profile)
+            exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
+            executor_profile_dict = executor_profile.__dict__
+            executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
+            executor_profile_dict.pop('id')
+            executor_response_dict = {**user_executor.__dict__, **executor_profile_dict}
+            executor_response = ExecutorResponse(**executor_response_dict)
+        else:
+            executor_response = None
 
         service = service_service.get_one_service_filter_by(id=order.id_service)
-        service_spec = service_service.get_one_specialization_filter_by(id=service.id_specialization)
-        service_dict = to_dict(service)
-        service_dict['specialization'] = SpecializationResponse(**service_spec.__dict__)
-        service_response = ShortServiceResponse(**service_dict)
+        if service:
+            service_spec = service_service.get_one_specialization_filter_by(id=service.id_specialization)
+            service_dict = to_dict(service)
+            service_dict['specialization'] = SpecializationResponse(**service_spec.__dict__)
+            service_response = ShortServiceResponse(**service_dict)
+        else:
+            service_response = None
 
         order_dict = to_dict(order)
         order_dict.update({
@@ -84,23 +91,33 @@ async def get_one_order(id: int,
     if not order:
         raise HTTPException(status_code=404, detail={'status': Status.NOT_FOUND.value})
     user_customer = user_service.get_user_filter_by(id=order.id_user_customer)
-    customer_profile = user_service.get_customer_filter_by(id=user_customer.id_customer_profile)
-    customer_response_dict = {**user_customer.__dict__, **customer_profile.__dict__}
-    customer_response = CustomerResponse(**customer_response_dict)
+    if user_customer:
+        customer_profile = user_service.get_customer_filter_by(id=user_customer.id_customer_profile)
+        customer_response_dict = {**user_customer.__dict__, **customer_profile.__dict__}
+        customer_response = CustomerResponse(**customer_response_dict)
+    else:
+        customer_response = None
 
     user_executor = user_service.get_user_filter_by(id=order.id_user_executor)
-    executor_profile = user_service.get_executor_filter_by(id=user_executor.id_executor_profile)
-    exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
-    executor_profile_dict = executor_profile.__dict__
-    executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
-    executor_response_dict = {**user_executor.__dict__, **executor_profile_dict}
-    executor_response = ExecutorResponse(**executor_response_dict)
+    if user_executor:
+        executor_profile = user_service.get_executor_filter_by(id=user_executor.id_executor_profile)
+        exec_spec = service_service.get_one_specialization_filter_by(id=executor_profile.id_specialization)
+        executor_profile_dict = executor_profile.__dict__
+        executor_profile_dict['specialization'] = SpecializationResponse(**exec_spec.__dict__)
+        executor_profile_dict.pop('id')
+        executor_response_dict = {**user_executor.__dict__, **executor_profile_dict}
+        executor_response = ExecutorResponse(**executor_response_dict)
+    else:
+        executor_response = None
 
     service = service_service.get_one_service_filter_by(id=order.id_service)
-    service_spec = service_service.get_one_specialization_filter_by(id=service.id_specialization)
-    service_dict = to_dict(service)
-    service_dict['specialization'] = SpecializationResponse(**service_spec.__dict__)
-    service_response = ShortServiceResponse(**service_dict)
+    if service:
+        service_spec = service_service.get_one_specialization_filter_by(id=service.id_specialization)
+        service_dict = to_dict(service)
+        service_dict['specialization'] = SpecializationResponse(**service_spec.__dict__)
+        service_response = ShortServiceResponse(**service_dict)
+    else:
+        service_response = None
 
     order_dict = to_dict(order)
     order_dict.update({

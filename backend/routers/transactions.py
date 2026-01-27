@@ -25,25 +25,30 @@ async def create_transaction(new_trans: CreateTransaction,
         raise HTTPException(status_code=404, detail={'status': Status.NOT_FOUND.value, 'message': 'Sender or recipient not found'})
     
     amount_transaction = Decimal(str(new_trans_dict['amount']))
-    service_commission = amount_transaction * Decimal('0.01') # Комиссия 1% с каждой транзакции
+    service_commission = amount_transaction * Decimal('0.01')
     new_trans_dict['commission'] = float(service_commission)
     total_debit = amount_transaction + service_commission
 
-    if sender.balance < total_debit:
-        raise HTTPException(status_code=400, detail={'status': Status.FAILED.value, 'message': f'Недостаточно средств.'})
-    
-    order = order_service.get_one_order_filter_by(id=new_trans_dict['id_order'])
-    if amount_transaction < order.price:
-        raise HTTPException(status_code=400, detail={'status': Status.FAILED.value, 'message': f'Сумма транзакции не может быть меньше стоимости заказа {order.price}.'})
-    
-    sender_new_balance = sender.balance - total_debit
-    user_service.update(user_id=sender.id, data=UserUpdate(balance=sender_new_balance))
+    if new_trans_dict['type'] == TransactionType.PAYMENT.value:
+        if sender.balance < total_debit:
+            raise HTTPException(status_code=400, detail={'status': Status.FAILED.value, 'message': f'Недостаточно средств.'})
+        
+        order = order_service.get_one_order_filter_by(id=new_trans_dict['id_order'])
+        if amount_transaction < order.price:
+            raise HTTPException(status_code=400, detail={'status': Status.FAILED.value, 'message': f'Сумма транзакции не может быть меньше стоимости заказа {order.price}.'})
+        
+        sender_new_balance = sender.balance - total_debit
+        user_service.update(user_id=sender.id, data=UserUpdate(balance=sender_new_balance))
 
-    recipient_new_balance = recipient.balance + amount_transaction
-    user_service.update(user_id=recipient.id, data=UserUpdate(balance=recipient_new_balance))
+        recipient_new_balance = recipient.balance + amount_transaction
+        user_service.update(user_id=recipient.id, data=UserUpdate(balance=recipient_new_balance))
+    elif new_trans_dict['type'] == TransactionType.DEPOSIT.value:
+        sender_new_balance = sender.balance + amount_transaction
+        user_service.update(user_id=sender.id, data=UserUpdate(balance=sender_new_balance))
 
     transaction = transaction_service.create_transaction(new_trans_dict)
     return Status.SUCCESS.value
+
 
 @router.get('/', status_code=200)
 async def get_all_transactions(id_order: int = Query(None),

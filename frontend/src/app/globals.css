@@ -6,10 +6,9 @@
   --text: #0f172a;
   --muted: #64748b;
   --accent: #2563eb;
-  --accent-text: #ffffff
+  --accent-text: #ffffff;
   --glass: rgba(255,255,255,0.6);
 }
-
 
 .dark {
   --bg: #121212;      
@@ -17,7 +16,7 @@
   --text: #e0e0e0;      
   --muted: #a0a0a0;     
   --accent: #ff6f61;
-  --accent-text-dark: #1f1f1f;
+  --accent-text: #ffffff;
   --glass: rgba(255,255,255,0.05);
 }
 
@@ -31,9 +30,22 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  a { color: var(--accent); text-decoration: none; transition: color 0.3s ease; }
-}
+  a,
+  a:link,
+  a:visited,
+  a:hover,
+  a:active,
+  a:focus {
+    color: inherit;
+    text-decoration: none;
+    background: none;
+  }
 
+  a * {
+    color: inherit;
+    text-decoration: none;
+  }
+}
 
 @layer components {
   .card {
@@ -43,15 +55,54 @@
     box-shadow: 0 6px 18px rgba(2,6,23,0.06);
     transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
   }
+  
   .card:hover {
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   }
 }
 
 @layer utilities {
-  .text-muted { color: var(--muted); transition: color 0.3s ease; }
-  .bg-bg { background-color: var(--bg); transition: background-color 0.3s ease; }
-  .text-text { color: var(--text); transition: color 0.3s ease; }
+  .text-muted { 
+    color: var(--muted); 
+    transition: color 0.3s ease; 
+  }
+  
+  .bg-bg { 
+    background-color: var(--bg); 
+    transition: background-color 0.3s ease; 
+  }
+  
+  .text-text { 
+    color: var(--text); 
+    transition: color 0.3s ease; 
+  }
+  
+  .bg-card { 
+    background-color: var(--card); 
+    transition: background-color 0.3s ease; 
+  }
+  
+  .bg-accent { 
+    background-color: var(--accent); 
+    transition: background-color 0.3s ease; 
+  }
+  
+  .text-accent { 
+    color: var(--accent); 
+    transition: color 0.3s ease; 
+  }
+  
+  .text-accent-text { 
+    color: var(--accent-text); 
+    transition: color 0.3s ease; 
+  }
+  
+  .border-accent { 
+    border-color: var(--accent); 
+    transition: border-color 0.3s ease; 
+  }
 }
 
-* { transition: background-color 0.3s ease, color 0.3s ease; }
+* { 
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; 
+}

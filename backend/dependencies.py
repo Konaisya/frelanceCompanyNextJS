@@ -63,8 +63,8 @@ def get_order_repository(db: Session = Depends(get_session)):
     return OrderRepository(model=Order, session=db)
 
 
-def get_order_service(order_repository: OrderRepository = Depends(get_order_repository)) -> OrderService:
-    return OrderService(order_repository=order_repository)
+def get_order_service(order_repository: OrderRepository = Depends(get_order_repository), service_repository: ServiceRepository = Depends(get_service_repository)) -> OrderService:
+    return OrderService(order_repository=order_repository, service_repository=service_repository)
 
 # Review
 def get_review_repository(db: Session = Depends(get_session)):

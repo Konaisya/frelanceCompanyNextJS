@@ -1,7 +1,6 @@
 
 import AmbientGlow from "@/components/ui/main/AmbientGlow";
 import FeaturesSection from "@/components/ui/main/FeaturesSection";
-import Footer from "@/components/ui/main/Footer";
 import HeroSection from "@/components/ui/main/HeroSection";
 import HowItWorksSection from "@/components/ui/main/HowItWorksSection";
 
@@ -13,7 +12,6 @@ export default function Home() {
         <HeroSection />
         <FeaturesSection />
         <HowItWorksSection />
-        <Footer />
      </main>
   );
 }
