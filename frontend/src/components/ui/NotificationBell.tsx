@@ -3,7 +3,6 @@ import { useState, useRef, useEffect } from 'react'
 import { Bell, MessageSquare, Check, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useChat } from './chat/ChatProvider'
-import Link from 'next/link'
 import { useAuth } from '@/components/ui/login/AuthProvider'
 import Image from 'next/image'
 
@@ -128,16 +127,6 @@ export default function NotificationBell() {
                 ))}
               </div>
             )}
-
-            <div className="p-3 border-t border-[color-mix(in_srgb,var(--text)_10%,transparent)] bg-[color-mix(in_srgb,var(--text)_3%,transparent)]">
-              <Link 
-                href="/chats"
-                className="text-sm text-[var(--accent)] hover:underline text-center block"
-                onClick={() => setIsOpen(false)}
-              >
-                Показать все чаты
-              </Link>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

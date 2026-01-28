@@ -55,7 +55,7 @@ export default function Navbar() {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/users/me', {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         })
         setUserData({ name: res.data.name, image: res.data.image })
@@ -141,7 +141,7 @@ export default function Navbar() {
                 >
                   {userData?.image ? (
                     <Image
-                      src={`http://127.0.0.1:8000/${userData.image}`}
+                      src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userData.image}`}
                       alt="Avatar"
                       width={36}
                       height={36}
@@ -257,7 +257,7 @@ export default function Navbar() {
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-[var(--accent)] flex items-center justify-center">
                         {userData?.image ? (
                           <Image
-                            src={`http://127.0.0.1:8000/${userData.image}`}
+                            src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${userData.image}`}
                             alt="Avatar"
                             width={40}
                             height={40}
