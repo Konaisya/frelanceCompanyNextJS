@@ -70,7 +70,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <div className="relative w-24 h-24 md:w-32 md:h-32">
               <div className="relative w-full h-full rounded-2xl border-4 border-accent/10 overflow-hidden">
                 <Image
-                  src={avatarUrl.startsWith('http') ? avatarUrl : `http://127.0.0.1:8000/${avatarUrl}`}
+                  src={avatarUrl.startsWith('http') ? avatarUrl : `${process.env.NEXT_PUBLIC_IMAGE_URL}${avatarUrl}`}
                   alt={user.name || 'User avatar'}
                   fill
                   className="object-cover"

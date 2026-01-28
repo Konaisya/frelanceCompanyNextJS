@@ -63,7 +63,7 @@ export default function ExecutorDrawer({ executor, services, isOpen, onClose }: 
                     <div className="w-14 h-14 overflow-hidden rounded-full  ring-3 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--card)]">
                       <Image
                         
-                        src={`http://127.0.0.1:8000/${executor.image}`}
+                        src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${executor.image}`}
                         alt={executor.name}
                         fill
                         className="object-cover rounded-full overflow-hidden"

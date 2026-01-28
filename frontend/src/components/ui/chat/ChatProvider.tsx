@@ -74,7 +74,7 @@ const loadUser = useCallback(
     if (!accessToken) return null
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/users/${userId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
       if (!res.ok) return null
@@ -194,7 +194,7 @@ const sendMessage = useCallback(
   useEffect(() => {
     if (!user?.id) return
 
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/${user.id}`)
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_API_WS}${user.id}`)
     socketRef.current = ws
 
     ws.onopen = () => setIsConnected(true)

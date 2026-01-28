@@ -91,7 +91,7 @@ export default function NotificationBell() {
                         <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center overflow-hidden">
                           {chat.userImage ? (
                             <Image
-                              src={`http://127.0.0.1:8000/${chat.userImage}`}
+                              src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${chat.userImage}`}
                               alt={chat.userName}
                               width={40}
                               height={40}

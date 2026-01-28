@@ -40,7 +40,7 @@ export default function ServiceCard({ service, currentUserId }: Props) {
         <div className="flex items-start gap-3 sm:gap-0 w-full sm:w-auto">
           <div className="relative w-12 h-12 sm:w-[80px] sm:h-[80px] shrink-0 rounded-xl sm:rounded-2xl overflow-hidden ring-2 ring-[var(--accent)]/40 group-hover:ring-[var(--accent)]/60 transition-all duration-300">
             <Image
-              src={`http://127.0.0.1:8000/${service.user_executor.image}`}
+              src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${service.user_executor.image}`}
               alt={service.user_executor.name}
               fill
               className="object-cover group-hover:scale-110 transition-transform duration-500"

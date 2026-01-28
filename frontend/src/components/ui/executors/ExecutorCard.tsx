@@ -25,7 +25,7 @@ export function ExecutorCard({ executor, onSelect }: ExecutorCardProps) {
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden ring-2 sm:ring-4 ring-[var(--card)] ring-offset-1 sm:ring-offset-2 ring-offset-[var(--bg)] shadow-lg">
             {executor.image ? (
               <Image
-                src={`http://127.0.0.1:8000/${executor.image}`}
+                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${executor.image}`}
                 alt={executor.name}
                 width={96}
                 height={96}
