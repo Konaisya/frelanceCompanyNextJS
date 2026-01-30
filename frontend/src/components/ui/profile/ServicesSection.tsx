@@ -52,7 +52,6 @@ const ServicesSection: React.FC<ServicesSectionProps> = ({
 
         <AnimatePresence>
           {loading ? (
-            // skeleton-представление пока идет загрузка сервисов
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

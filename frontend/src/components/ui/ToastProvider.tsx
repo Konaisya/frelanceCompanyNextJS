@@ -31,7 +31,7 @@ export default function ToastProvider({ children }: { children: ReactNode }) {
   }
 
   const showToast = (toast: Omit<Toast, 'id'>) => {
-    const id = crypto.randomUUID()
+   const id = Math.random().toString(36).slice(2)
 
     const toastData = {
       ...toast,

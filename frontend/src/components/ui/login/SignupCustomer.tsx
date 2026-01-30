@@ -76,7 +76,7 @@ export default function SignupCustomer({ onBack, onSuccess }: SignupProps) {
       showToast({
         type: 'success',
         title: 'Регистрация успешна',
-        description: 'Письмо с подтверждением отправлено',
+        description: 'Теперь вы можете войти в свой аккаунт',
       })
 
       onSuccess(form.email)

@@ -3,12 +3,12 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Plus, Clock, DollarSign } from 'lucide-react'
-import { CreateServiceData, Service } from '@/types/profile'
+import { CreateServiceData } from '@/types/profile'
 
 interface CreateServiceModalProps {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: CreateServiceData) => Promise<Service | null>
+  onSubmit: (data: CreateServiceData) => Promise<boolean>
 }
 
 const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
@@ -25,20 +25,26 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
   })
   const [loading, setLoading] = useState(false)
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      id_specialization: 1,
+      price: 0,
+      delivery_time: 1
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+
     try {
-      const newService = await onSubmit(formData)
-      if (newService) {
+      const success = await onSubmit(formData)
+
+      if (success) {
+        resetForm()
         onClose()
-        setFormData({
-          name: '',
-          description: '',
-          id_specialization: 1,
-          price: 0,
-          delivery_time: 1
-        })
       }
     } catch (error) {
       console.error('Error creating service:', error)
@@ -74,7 +80,9 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-text">Новый сервис</h3>
-                      <p className="text-sm text-muted">Заполните информацию о сервисе</p>
+                      <p className="text-sm text-muted">
+                        Заполните информацию о сервисе
+                      </p>
                     </div>
                   </div>
                   <button
@@ -94,9 +102,10 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl text-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
-                      placeholder="Введите название сервиса"
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl"
                       required
                       disabled={loading}
                     />
@@ -108,10 +117,14 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                     </label>
                     <textarea
                       value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value
+                        })
+                      }
                       rows={4}
-                      className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl text-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
-                      placeholder="Опишите ваш сервис"
+                      className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl resize-none"
                       required
                       disabled={loading}
                     />
@@ -128,11 +141,16 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                       <input
                         type="number"
                         value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            price: Number(e.target.value)
+                          })
+                        }
                         min="0"
-                        className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl text-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                         required
                         disabled={loading}
+                        className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl"
                       />
                     </div>
 
@@ -146,11 +164,16 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                       <input
                         type="number"
                         value={formData.delivery_time}
-                        onChange={(e) => setFormData({ ...formData, delivery_time: Number(e.target.value) })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            delivery_time: Number(e.target.value)
+                          })
+                        }
                         min="1"
-                        className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl text-text focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                         required
                         disabled={loading}
+                        className="w-full px-4 py-3 bg-bg border border-accent/20 rounded-xl"
                       />
                     </div>
                   </div>
@@ -159,27 +182,17 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({
                     <button
                       type="button"
                       onClick={onClose}
-                      className="flex-1 px-4 py-3 border border-accent/30 text-accent rounded-xl hover:bg-accent/10 transition-colors disabled:opacity-50"
                       disabled={loading}
+                      className="flex-1 px-4 py-3 border border-accent/30 text-accent rounded-xl"
                     >
                       Отмена
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 px-4 py-3 bg-accent text-accent-text rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-3 bg-accent text-accent-text rounded-xl flex items-center justify-center gap-2"
                     >
-                      {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-accent-text border-t-transparent rounded-full animate-spin" />
-                          Создание...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4" />
-                          Создать сервис
-                        </>
-                      )}
+                      {loading ? 'Создание...' : 'Создать сервис'}
                     </button>
                   </div>
                 </form>

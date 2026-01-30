@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Service, Review,  CreateServiceData} from '@/lib/api/axios'
+import { User, Service, Review, CreateServiceData } from '@/lib/api/axios'
 import { useToast } from '@/components/ui/ToastProvider'
 import { useAuth } from '@/components/ui/login/AuthProvider'
 import { profileAPI } from '@/lib/api/axios'
@@ -24,7 +24,7 @@ export const useProfile = () => {
   const [loading, setLoading] = useState(true)
   const [servicesLoading, setServicesLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
   const router = useRouter()
   const { isAuth, isLoading, logout } = useAuth()
   const { showToast } = useToast()
@@ -33,7 +33,7 @@ export const useProfile = () => {
     try {
       setLoading(true)
       setError(null)
-      
+
       const userResponse = await profileAPI.getMe()
       const userData = userResponse.data
       setUser(userData)
@@ -85,16 +85,7 @@ export const useProfile = () => {
 
     try {
       const response = await profileAPI.updateAvatar(user.id, imageFile)
-
-      setUser(prev => {
-        if (prev) {
-          return {
-            ...prev,
-            image: response.data.image
-          }
-        }
-        return response.data
-      })
+      setUser(prev => prev ? { ...prev, image: response.data.image } : response.data)
 
       showToast({
         title: 'Успешно',
@@ -113,60 +104,54 @@ export const useProfile = () => {
     }
   }
 
-  const createService = async (serviceData: CreateServiceData & { id_user_executor: number }) => {
+  const createService = async (
+    serviceData: CreateServiceData & { id_user_executor: number }
+  ) => {
     try {
-      const response = await profileAPI.createService(serviceData)
-      const newService = response.data
-      
-      if (!newService.id) {
-        newService.id = Date.now()
-      }
-      
-      setServices(prev => [newService, ...prev])
+      await profileAPI.createService(serviceData)
+      await fetchProfileData()
+
       showToast({
         title: 'Успешно',
         description: 'Сервис создан',
         type: 'success'
       })
-      return newService
+
+      return true
     } catch (err: unknown) {
       const error = err as ApiError
-      if (error.response?.status === 401) {
-        logout()
-      } else {
-        showToast({
-          title: 'Ошибка',
-          description: 'Не удалось создать сервис',
-          type: 'error'
-        })
-      }
-      return null
+      if (error.response?.status === 401) logout()
+
+      showToast({
+        title: 'Ошибка',
+        description: 'Не удалось создать сервис',
+        type: 'error'
+      })
+      return false
     }
   }
 
   const updateService = async (id: number, serviceData: Partial<Service>) => {
     try {
       await profileAPI.updateService(id, serviceData as Partial<CreateServiceData>)
-      setServices(prev => prev.map(service => 
-        service.id === id ? { ...service, ...serviceData } : service
-      ))
+      await fetchProfileData()
+
       showToast({
         title: 'Успешно',
         description: 'Сервис обновлен',
         type: 'success'
       })
+
       return true
     } catch (err: unknown) {
       const error = err as ApiError
-      if (error.response?.status === 401) {
-        logout()
-      } else {
-        showToast({
-          title: 'Ошибка',
-          description: 'Не удалось обновить сервис',
-          type: 'error'
-        })
-      }
+      if (error.response?.status === 401) logout()
+
+      showToast({
+        title: 'Ошибка',
+        description: 'Не удалось обновить сервис',
+        type: 'error'
+      })
       return false
     }
   }
@@ -174,29 +159,29 @@ export const useProfile = () => {
   const deleteService = async (id: number) => {
     try {
       await profileAPI.deleteService(id)
-      setServices(prev => prev.filter(service => service.id !== id))
+      await fetchProfileData()
+
       showToast({
         title: 'Успешно',
         description: 'Сервис удален',
         type: 'success'
       })
+
       return true
     } catch (err: unknown) {
       const error = err as ApiError
-      if (error.response?.status === 401) {
-        logout()
-      } else {
-        showToast({
-          title: 'Ошибка',
-          description: 'Не удалось удалить сервис',
-          type: 'error'
-        })
-      }
+      if (error.response?.status === 401) logout()
+
+      showToast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить сервис',
+        type: 'error'
+      })
       return false
     }
   }
 
-  const updateProfileData = async (updatedUser: User) => {
+  const updateProfileData = (updatedUser: User) => {
     setUser(updatedUser)
   }
 

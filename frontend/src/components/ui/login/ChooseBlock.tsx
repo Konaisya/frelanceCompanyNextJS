@@ -58,7 +58,6 @@ export default function ChooseBlock({ onSelect }: Props) {
         </motion.p>
       </div>
 
-      {/* Options */}
       <div className="space-y-3">
         {options.map((option) => (
           <motion.button
@@ -76,7 +75,6 @@ export default function ChooseBlock({ onSelect }: Props) {
               overflow-hidden
             "
           >
-            {/* Accent */}
             <span
               className="
                 absolute left-0 top-0 h-full w-[3px]
@@ -119,7 +117,6 @@ export default function ChooseBlock({ onSelect }: Props) {
         ))}
       </div>
 
-      {/* Divider */}
       <div className="relative my-5">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-[color:color-mix(in_srgb,var(--text)_15%,transparent)]" />
@@ -131,7 +128,7 @@ export default function ChooseBlock({ onSelect }: Props) {
         </div>
       </div>
 
-      {/* Guest */}
+
       <Link href="/services" className="text-[var(--accent)] hover:underline">
       <button
         onClick={() => onSelect('login')}

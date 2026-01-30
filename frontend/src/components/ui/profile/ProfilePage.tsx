@@ -12,6 +12,8 @@ import CreateServiceModal from './CreateServiceModal'
 import EditProfileModal from './EditProfileModal'
 import { CreateServiceData, User, Service } from '@/lib/api/axios'
 
+
+
 const ProfilePage: React.FC = () => {
   const {
     user,
@@ -30,11 +32,8 @@ const ProfilePage: React.FC = () => {
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false)
-  const [localServices, setLocalServices] = useState<Service[]>(services || [])
 
-  React.useEffect(() => {
-    setLocalServices(services)
-  }, [services])
+
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-bg">
@@ -60,25 +59,16 @@ const ProfilePage: React.FC = () => {
     </div>
   )
 
-  const handleCreateService = async (data: CreateServiceData) => {
-    if (!user) return null
+const handleCreateService = async (data: CreateServiceData) => {
+  if (!user) return false
+
+  return await createService({
+    ...data,
+    id_user_executor: user.id,
+  })
+}
 
 
-    const serviceData = {
-      ...data,
-      id_user_executor: user.id,
-    }
-
-    const newService = await createService(serviceData)
-
-    if (newService) {
-      setLocalServices(prev => [...prev, newService])
-      setIsCreateModalOpen(false)
-      return newService
-    }
-
-    return null
-  }
 
   const handleProfileUpdate = (updatedUser: User) => {
     updateProfileData(updatedUser)
@@ -105,7 +95,7 @@ const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
             <div className="lg:col-span-2 space-y-8">
               {isExecutor && (
-                <ProfileStats user={user} reviews={reviews} services={localServices} />
+                <ProfileStats user={user} reviews={reviews} services={services} />
               )}
               
               <OrdersSection 
@@ -115,7 +105,7 @@ const ProfilePage: React.FC = () => {
               
               {isExecutor && (
                 <ServicesSection
-                  services={localServices}
+                  services={services}
                   loading={servicesLoading}
                   onUpdate={updateService}
                   onDelete={deleteService}
