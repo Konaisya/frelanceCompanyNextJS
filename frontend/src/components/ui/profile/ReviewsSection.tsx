@@ -35,7 +35,6 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ userId }) => {
         const response = await profileAPI.getReviews({ id_user_target: userId })
         setReviews(response.data)
       } catch (err: unknown) {
-        // безопасная проверка типа
         if (err instanceof Error) {
           setError(err.message)
         } else {

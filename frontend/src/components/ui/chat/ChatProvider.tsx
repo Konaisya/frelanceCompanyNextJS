@@ -6,7 +6,8 @@ import {
   useState,
   ReactNode,
   useCallback,
-  useRef
+  useRef,
+  useMemo
 } from 'react'
 import { useAuth } from '@/components/ui/login/AuthProvider'
 import { useToast } from '../ToastProvider'
@@ -61,38 +62,39 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [currentChatUserId, setCurrentChatUserId] = useState<number | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
 
-  useEffect(() => {
-    setUnreadCount(chats.reduce((sum, c) => sum + c.unreadCount, 0))
+  const calculatedUnreadCount = useMemo(() => {
+    return chats.reduce((sum, c) => sum + c.unreadCount, 0)
   }, [chats])
 
+  useEffect(() => {
+    setUnreadCount(calculatedUnreadCount)
+  }, [calculatedUnreadCount])
 
   const usersCache = useRef<Record<number, { name: string; image?: string }>>({})
 
-const loadUser = useCallback(
-  async (userId: number) => {
-    if (usersCache.current[userId]) return usersCache.current[userId]
-    if (!accessToken) return null
+  const loadUser = useCallback(
+    async (userId: number) => {
+      if (usersCache.current[userId]) return usersCache.current[userId]
+      if (!accessToken) return null
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      })
-      if (!res.ok) return null
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
+        if (!res.ok) return null
 
-      const data = await res.json()
-      usersCache.current[userId] = {
-        name: data.name,
-        image: data.image
+        const data = await res.json()
+        usersCache.current[userId] = {
+          name: data.name,
+          image: data.image
+        }
+        return usersCache.current[userId]
+      } catch {
+        return null
       }
-      return usersCache.current[userId]
-    } catch {
-      return null
-    }
-  },
-  [accessToken]
-)
-
-
+    },
+    [accessToken]
+  )
 
   const markAsRead = useCallback(
     (userId: number) => {
@@ -113,36 +115,35 @@ const loadUser = useCallback(
     [user?.id]
   )
 
-const sendMessage = useCallback(
-  async (recipientId: number, message: string, orderId?: number) => {
-    if (recipientId === user?.id) {
-      showToast({
-        title: 'Нельзя написать самому себе',
-        description: 'Выберите другого пользователя для общения',
-        type: 'error',
-      })
-      return false
-    }
+  const sendMessage = useCallback(
+    async (recipientId: number, message: string, orderId?: number) => {
+      if (recipientId === user?.id) {
+        showToast({
+          title: 'Нельзя написать самому себе',
+          description: 'Выберите другого пользователя для общения',
+          type: 'error',
+        })
+        return false
+      }
 
-    const ws = socketRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN || !message.trim()) {
-      return false
-    }
+      const ws = socketRef.current
+      if (!ws || ws.readyState !== WebSocket.OPEN || !message.trim()) {
+        return false
+      }
 
-    ws.send(
-      JSON.stringify({
-        type: 'message',
-        recipient_id: recipientId,
-        message: message.trim(),
-        order_id: orderId ?? null
-      })
-    )
+      ws.send(
+        JSON.stringify({
+          type: 'message',
+          recipient_id: recipientId,
+          message: message.trim(),
+          order_id: orderId ?? null
+        })
+      )
 
-    return true
-  },
-  [user?.id, showToast]
-)
-
+      return true
+    },
+    [user?.id, showToast]
+  )
 
   const openChat = useCallback(
     (userId: number, userName?: string, userImage?: string) => {
@@ -190,17 +191,16 @@ const sendMessage = useCallback(
     [activeChats, closeChat, openChat]
   )
 
-
   useEffect(() => {
     if (!user?.id) return
 
     const ws = new WebSocket(`${process.env.NEXT_PUBLIC_API_WS}${user.id}`)
     socketRef.current = ws
 
-    ws.onopen = () => setIsConnected(true)
-    ws.onclose = () => setIsConnected(false)
+    const handleOpen = () => setIsConnected(true)
+    const handleClose = () => setIsConnected(false)
 
-    ws.onmessage = async event => {
+    const handleMessage = async (event: MessageEvent) => {
       const data = JSON.parse(event.data)
       if (data.type !== 'message') return
 
@@ -265,43 +265,66 @@ const sendMessage = useCallback(
       })
     }
 
-    return () => ws.close()
-  }, [user?.id, loadUser])
+    ws.addEventListener('open', handleOpen)
+    ws.addEventListener('close', handleClose)
+    ws.addEventListener('message', handleMessage)
 
-  const filteredMessages =
-    currentChatUserId && user?.id
-      ? messages
-          .filter(
-            m =>
-              (m.sender_id === currentChatUserId &&
-                m.recipient_id === user.id) ||
-              (m.recipient_id === currentChatUserId &&
-                m.sender_id === user.id)
-          )
-          .sort(
-            (a, b) =>
-              new Date(a.created_at).getTime() -
-              new Date(b.created_at).getTime()
-          )
-      : []
+    return () => {
+      ws.removeEventListener('open', handleOpen)
+      ws.removeEventListener('close', handleClose)
+      ws.removeEventListener('message', handleMessage)
+      ws.close()
+    }
+  }, [user?.id, loadUser]) // Только эти зависимости
+
+  const filteredMessages = useMemo(() => {
+    if (!currentChatUserId || !user?.id) return []
+    
+    return messages
+      .filter(
+        m =>
+          (m.sender_id === currentChatUserId &&
+            m.recipient_id === user.id) ||
+          (m.recipient_id === currentChatUserId &&
+            m.sender_id === user.id)
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() -
+          new Date(b.created_at).getTime()
+      )
+  }, [messages, currentChatUserId, user?.id])
+
+  const contextValue = useMemo(() => ({
+    messages: filteredMessages,
+    chats,
+    activeChats,
+    sendMessage,
+    unreadCount,
+    isConnected,
+    currentChatUserId,
+    openChat,
+    closeChat,
+    closeAllChats,
+    toggleChat,
+    markAsRead
+  }), [
+    filteredMessages,
+    chats,
+    activeChats,
+    sendMessage,
+    unreadCount,
+    isConnected,
+    currentChatUserId,
+    openChat,
+    closeChat,
+    closeAllChats,
+    toggleChat,
+    markAsRead
+  ])
 
   return (
-    <ChatContext.Provider
-      value={{
-        messages: filteredMessages,
-        chats,
-        activeChats,
-        sendMessage,
-        unreadCount,
-        isConnected,
-        currentChatUserId,
-        openChat,
-        closeChat,
-        closeAllChats,
-        toggleChat,
-        markAsRead
-      }}
-    >
+    <ChatContext.Provider value={contextValue}>
       {children}
     </ChatContext.Provider>
   )

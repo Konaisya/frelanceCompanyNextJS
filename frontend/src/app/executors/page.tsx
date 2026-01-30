@@ -6,10 +6,11 @@ import ExecutorsHero from '@/components/ui/executors/ExecutorsHero'
 import ExecutorsGrid from '@/components/ui/executors/ExecutorsGrid'
 import ExecutorDrawer from '@/components/ui/executors/ExecutorDrawer'
 import ExecutorsFilters from '@/components/ui/executors/ExecutorsFilters'
+import ChatWindow from '@/components/ui/chat/ChatWindow'
 import { useToast } from '@/components/ui/ToastProvider'
 import { Service } from '@/types/service'
 import { Executor, UserResponse, Review } from '@/types/executor'
-
+import { getExperienceLevel } from '@/components/ui/executors/ExecutorsFilters'
 
 export default function ExecutorsPage() {
   const [executors, setExecutors] = useState<Executor[]>([])
@@ -26,8 +27,7 @@ export default function ExecutorsPage() {
   const [services, setServices] = useState<Service[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-
-
+  const [showChat, setShowChat] = useState(false)
 
   const calculateAverageRating = (reviews: Review[]): number => {
     if (reviews.length === 0) return 0
@@ -46,7 +46,7 @@ export default function ExecutorsPage() {
       return response.data.length
     } catch {
       return 0
-  }
+    }
   }
 
   const fetchExecutors = useCallback(async () => {
@@ -116,7 +116,7 @@ export default function ExecutorsPage() {
               }
             }))
           }
-      } catch {
+        } catch {
           showToast({
             type: 'error',
             title: 'Ошибка загрузки исполнителя',
@@ -142,50 +142,48 @@ export default function ExecutorsPage() {
     fetchExecutors()
   }, [fetchExecutors])
 
-
-  const filteredExecutors = useMemo(() => {
-    return executors
-      .filter(e => {
-        if (filters.search.trim()) {
-          const query = filters.search.toLowerCase()
-          return e.name.toLowerCase().includes(query) ||
-            e.skills.toLowerCase().includes(query) ||
-            e.specialization.name.toLowerCase().includes(query)
-        }
-        return true
-      })
-      .filter(e => {
-        if (filters.specializations.length === 0) return true
-        const specName = e.specialization?.name.toLowerCase()
-        return filters.specializations.some(spec => specName.includes(spec.toLowerCase()))
-      })
-      .filter(e => {
-        if (filters.experience.length === 0) return true
-        let experienceLevel = 'junior'
-        if (e.experience >= 5) experienceLevel = 'senior'
-        else if (e.experience >= 2) experienceLevel = 'middle'
-        return filters.experience.includes(experienceLevel)
-      })
-      .filter(e => {
-        if (!e.price_range) return true
-        const [min, max] = e.price_range
-        const [filterMin, filterMax] = filters.priceRange
-        return max >= filterMin && min <= filterMax
-      })
-      .sort((a, b) => {
-        switch (filters.sortBy) {
-          case 'rating': return (b.rating || 0) - (a.rating || 0)
-          case 'price_low': return (a.price_range?.[0] || 0) - (b.price_range?.[0] || 0)
-          case 'price_high': return (b.price_range?.[1] || 0) - (a.price_range?.[1] || 0)
-          case 'services': return (b.services_count || 0) - (a.services_count || 0)
-          case 'orders': return (b.completed_orders || 0) - (a.completed_orders || 0)
-          case 'experience': return b.experience - a.experience
-          case 'newest': return b.id - a.id
-          case 'popularity':
-          default: return (b.completed_orders || 0) - (a.completed_orders || 0)
-        }
-      })
-  }, [executors, filters])
+const filteredExecutors = useMemo(() => {
+  return executors
+    .filter(e => {
+      if (filters.search.trim()) {
+        const query = filters.search.toLowerCase()
+        return e.name.toLowerCase().includes(query) ||
+          e.skills.toLowerCase().includes(query) ||
+          e.specialization.name.toLowerCase().includes(query)
+      }
+      return true
+    })
+    .filter(e => {
+      if (filters.specializations.length === 0) return true
+      const specName = e.specialization?.name.toLowerCase()
+      return filters.specializations.some(spec => specName.includes(spec.toLowerCase()))
+    })
+    .filter(e => {
+      if (filters.experience.length === 0) return true
+      const userExperience = e.experience || 0
+      const experienceLevel = getExperienceLevel(userExperience)
+      return filters.experience.includes(experienceLevel)
+    })
+    .filter(e => {
+      if (!e.price_range) return true
+      const [min, max] = e.price_range
+      const [filterMin, filterMax] = filters.priceRange
+      return max >= filterMin && min <= filterMax
+    })
+    .sort((a, b) => {
+      switch (filters.sortBy) {
+        case 'rating': return (b.rating || 0) - (a.rating || 0)
+        case 'price_low': return (a.price_range?.[0] || 0) - (b.price_range?.[0] || 0)
+        case 'price_high': return (b.price_range?.[1] || 0) - (a.price_range?.[1] || 0)
+        case 'services': return (b.services_count || 0) - (a.services_count || 0)
+        case 'orders': return (b.completed_orders || 0) - (a.completed_orders || 0)
+        case 'experience': return b.experience - a.experience
+        case 'newest': return b.id - a.id
+        case 'popularity':
+        default: return (b.completed_orders || 0) - (a.completed_orders || 0)
+      }
+    })
+}, [executors, filters])
 
   const handleExecutorSelect = (executor: Executor) => {
     setSelectedExecutor(executor)
@@ -201,6 +199,17 @@ export default function ExecutorsPage() {
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false)
     setTimeout(() => setSelectedExecutor(null), 300)
+  }
+
+  const handleOpenChat = () => {
+    if (window.innerWidth < 768) {
+      setIsDrawerOpen(false)
+      setTimeout(() => {
+        setShowChat(true)
+      }, 300) 
+    } else {
+      setShowChat(true)
+    }
   }
 
   const handleResetAllFilters = () => {
@@ -276,7 +285,12 @@ export default function ExecutorsPage() {
           services={services}
           isOpen={isDrawerOpen}
           onClose={handleCloseDrawer}
+          onOpenChat={handleOpenChat}
         />
+      )}
+
+      {showChat && (
+        <ChatWindow onClose={() => setShowChat(false)} />
       )}
     </div>
   )

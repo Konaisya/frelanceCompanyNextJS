@@ -20,7 +20,7 @@ class UserCreate(BaseModel):
     @field_validator('password')
     @classmethod
     def validate_password(cls, val: str):
-        if not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$', val):
+        if not re.match(r'^(?=.{8,}$)(?=.*[A-Za-z])(?=.*\d).+', val):
             raise ValueError('Invalid password')
         return val
 
@@ -44,7 +44,7 @@ class UserUpdate(BaseModel):
     def validate_password(cls, val: str):
         if val is None: 
             return None
-        if not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$', val):
+        if not re.match(r'^(?=.{8,}$)(?=.*[A-Za-z])(?=.*\d).+', val):
             raise ValueError('Invalid password')
         return val
     
@@ -62,7 +62,7 @@ class UserLogin(BaseModel):
     @field_validator('password')
     @classmethod
     def validate_password(cls, val: str):
-        if not re.match(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$', val):
+        if not re.match(r'^(?=.{8,}$)(?=.*[A-Za-z])(?=.*\d).+', val):
             raise ValueError('Invalid password')
         return val
     

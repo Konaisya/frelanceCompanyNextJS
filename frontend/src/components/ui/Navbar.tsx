@@ -13,7 +13,6 @@ import ChatWindow from './chat/ChatWindow'
 import NotificationBell from './NotificationBell'
 import { useChat } from './chat/useChat'
 
-
 const navLinks = [
   { href: '/', label: 'Главная' },
   { href: '/services', label: 'Проекты' },
@@ -26,12 +25,20 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [showChat, setShowChat] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const mobileMenuRef = useRef<HTMLDivElement | null>(null)
 
   const { isAuth, logout, accessToken, user } = useAuth()
   const { unreadCount } = useChat()
   const [userData, setUserData] = useState<{ name: string; image: string } | null>(null)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     setScrolled(latest > 30)
@@ -117,11 +124,14 @@ export default function Navbar() {
                 <Link href="/login">
                   <Button className="hidden sm:block">Войти</Button>
                 </Link>
-                <ThemeToggle />
+                <div className="hidden md:block">
+                  <ThemeToggle />
+                </div>
               </>
             ) : (
               <>
-                <NotificationBell />
+                {!isMobile && <NotificationBell />}
+                
                 <button
                   onClick={() => setShowChat(!showChat)}
                   className="relative p-2 rounded-lg hover:bg-[color-mix(in_srgb,var(--text)_10%,transparent)] transition-colors"
@@ -189,7 +199,9 @@ export default function Navbar() {
                   </motion.div>
                 )}
                 
-                <ThemeToggle />
+                <div className="hidden md:block">
+                  <ThemeToggle />
+                </div>
               </>
             )}
           </div>
@@ -296,12 +308,7 @@ export default function Navbar() {
                     </button>
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-[color-mix(in_srgb,var(--text)_10%,transparent)]">
-                    <div className="flex items-center justify-between px-4 py-3">
-                      <span className="text-sm font-medium">Тема</span>
-                      <ThemeToggle />
-                    </div>
-                    
+                  <div className="mt-4 pt-4 border-t border-[color-mix(in_srgb,var(--text)_10%,transparent)]">                    
                     <button
                       onClick={() => {
                         logout()

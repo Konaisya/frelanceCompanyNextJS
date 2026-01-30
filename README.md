@@ -55,7 +55,7 @@
 cd backend
 # создать виртуальное окружение
 python -m venv .venv
-.venv\\Scripts\\activate    # Windows
+.venv\Scripts\activate    # Windows
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
@@ -64,7 +64,7 @@ python -m pip install -r requirements.txt
 
 ```bash
 cd backend
-.venv\\Scripts\\activate    # если ещё не активировано (Windows)
+.venv\Scripts\activate    # если ещё не активировано (Windows)
 fastapi dev
 ```
 
