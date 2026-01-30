@@ -10,7 +10,7 @@ import ReviewsSection from './ReviewsSection'
 import OrdersSection from './OrdersSection'
 import CreateServiceModal from './CreateServiceModal'
 import EditProfileModal from './EditProfileModal'
-import { CreateServiceData, User, Service } from '@/lib/api/axios'
+import { CreateServiceData, User } from '@/lib/api/axios'
 
 
 
@@ -135,6 +135,12 @@ const handleCreateService = async (data: CreateServiceData) => {
                       <h4 className="font-medium text-text mb-2">Баланс</h4>
                       <p className="text-2xl font-bold text-accent">
                         {user.balance?.toLocaleString('ru-RU') || '0'} ₽
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-text mb-2">Компания</h4>
+                      <p className="text-2xl font-bold text-accent">
+                        {user.company}
                       </p>
                     </div>
                   </div>

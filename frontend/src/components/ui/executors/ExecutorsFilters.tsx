@@ -17,17 +17,26 @@ interface ExecutorsFiltersProps {
   onChange: (filters: ExecutorsFiltersProps['filters']) => void
 }
 
+const getExperienceLevel = (years: number): string => {
+  if (years < 1) return 'intern'
+  if (years >= 1 && years < 3) return 'junior'
+  if (years >= 3 && years < 5) return 'middle'
+  if (years >= 5 && years < 8) return 'senior'
+  return 'lead'
+}
+
+const experienceLevels = [
+  { value: 'intern', label: 'Стажер (до 1 года)' },
+  { value: 'junior', label: 'Junior (1-2 года)' },
+  { value: 'middle', label: 'Middle (3-4 года)' },
+  { value: 'senior', label: 'Senior (5-7 лет)' },
+  { value: 'lead', label: 'Lead (8+ лет)' },
+]
+
 export default function ExecutorsFilters({ filters, onChange }: ExecutorsFiltersProps) {
   const [specializations, setSpecializations] = useState<Specialization[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const experienceLevels = [
-    { value: 'junior', label: 'Junior' },
-    { value: 'middle', label: 'Middle' },
-    { value: 'senior', label: 'Senior' },
-    { value: 'lead', label: 'Lead' },
-  ]
 
   useEffect(() => {
     const loadSpecializations = async () => {
@@ -81,7 +90,7 @@ export default function ExecutorsFilters({ filters, onChange }: ExecutorsFilters
         )}
 
         <FilterDropdown
-          label="Уровень"
+          label="Уровень опыта"
           options={experienceLevels}
           selected={filters.experience}
           onChange={(vals) => onChange({ ...filters, experience: vals })}
@@ -110,3 +119,5 @@ export default function ExecutorsFilters({ filters, onChange }: ExecutorsFilters
     </div>
   )
 }
+
+export { getExperienceLevel }

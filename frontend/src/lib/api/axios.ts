@@ -13,6 +13,7 @@ export interface User {
     id: number
     name: string
   }
+  company?: string
   contacts?: string
   experience?: number
   skills?: string
@@ -46,16 +47,20 @@ export interface Service {
   updated_at?: string
 }
 
+
 export interface Review {
   id: number
-  id_user_author: number
+  user_author: {
+    id: number
+    name: string
+    image: string
+  }
   id_user_target: number
   id_order: number
   rating: number
   comment: string
   created_at: string
   updated_at: string
-  author_name?: string
 }
 
 export interface Specialization {

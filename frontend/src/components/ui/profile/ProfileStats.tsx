@@ -3,7 +3,8 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { DollarSign, Package, Star } from 'lucide-react'
-import { Review, Service } from '@/types/profile'
+import {  Service } from '@/types/profile'
+import { Review } from '@/lib/api/axios'
 
 interface User {
   id: number
